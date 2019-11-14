@@ -1,0 +1,729 @@
+---
+title: "Nass Data Preparation"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    theme: simplex
+    highlight: tango
+    df_print: paged
+    code_folding: hide
+---
+
+[comment]: # Change the menu bar color and font size
+[comment]: # code.r is code block text and pre is for output of knitr chunks
+<style>
+  .list-group-item.active, .list-group-item.active:focus, .list-group-item.active:hover {background-color: #4e9a06;}
+  body, td {font-size: 14px;}
+  code.r {font-size: 14px;}
+  pre {font-size: 14px}
+</style>
+
+```{r setup, message=F, warning=F}
+#--------------------------
+#Setup and Global Options
+#--------------------------
+
+#code block options
+knitr::opts_chunk$set(echo = TRUE)
+
+#libraries
+library(DBI)
+library(tidyr)
+library(dplyr)
+library(stringr)
+library(readr)
+library(forcats)
+library(ggplot2)
+library(kableExtra)
+library(sf)
+library(tmap)
+library(bcdata)
+
+#postgres
+db = dbConnect(RPostgreSQL::PostgreSQL(), host="localhost", user = "postgres")
+knitr::opts_chunk$set(connection = "db")
+knitr::opts_knit$set(sql.max.print = NA)
+
+#ggplot default theme options
+#knitr::opts_chunk$set(fig.height = 4, collapse = TRUE)
+gg_theme <- theme_minimal() + theme(axis.text.x = element_text(angle = 30, hjust = 1))
+
+#kable
+options(knitr.kable.NA = '')
+
+#kable default table
+kable <- function(data) {
+  knitr::kable(data, digits = 0, format.args = list(big.mark = ",")) %>% 
+  kable_styling(bootstrap_options = "striped", full_width = TRUE)
+}
+
+#tmap options to 'plot' image or 'view' interactive leaflet
+tmap_mode('plot')
+
+#suppress messages about resizing legends
+tmap_options(show.messages = FALSE) 
+
+#create standard boundary layers for mapping
+bnd <- bcdc_query_geodata('WHSE_ADMIN_BOUNDARIES.FADM_TSA') %>%
+  filter(TSA_NUMBER == '43') %>%  collect() %>% 
+  tm_shape() +  tm_borders()
+
+srmp <- bcdc_query_geodata('WHSE_LAND_USE_PLANNING.RMP_STRGC_LAND_RSRCE_PLAN_SVW') %>%
+  filter(STRGC_LAND_RSRCE_PLAN_NAME == 'Nass South Sustainable Resource Management Plan') %>%  collect() %>% 
+  tm_shape() +  tm_borders(lty = 2)
+```
+
+Some analysis and manipulation is required to prepare data for input to the timber supply model. This report documents the work flow completed.
+
+The constraint input files were built in a table `tsa43_dataprep`. The starting table was created from the `tsa43_netdown` so that area checks using CFLB and THLB could be run.
+
+The RasterTools will then be applied to export data from this table into .tif raster files for use in SELES. The 'cats' file generated during this process can be used to create the constraints text file.
+
+```{sql class.source = 'fold-show'}
+drop table if exists tsa43_dataprep;
+
+create table tsa43_dataprep as (
+  select 
+    skey.gr_skey,
+    net.cflb_fact,
+    net.thlb_fact,
+    skey.wkb_geometry 
+  from tsa43_skey skey
+  left join tsa43_netdown net
+  on skey.gr_skey = net.gr_skey
+  where skey.gr_skey > 0
+);
+```
+\
+
+# Visual Quality Objectives
+
+Summarize the area in visuals by VAC and VQO. I checked to make sure that only the visuals "made known" = "Y" had VQO assigned. So all other VLI polys can be ignored.
+
+```{r}
+dbGetQuery(db,'
+  select  vli_evqo, vli_vac, count(gr_skey) total
+  from tsa43_res
+  where vli_evqo is not null
+  group by 1,2 order by 1,2;
+') %>% 
+#transpose
+spread(vli_vac, total) %>% 
+#add a totals row
+bind_rows(
+  #sum all numeric columns
+  summarise_if(., is.numeric, sum, na.rm=T) %>% 
+  #add row title to sums
+  mutate(vli_evqo="Total")
+) %>% 
+#choose columns and retitle
+select(VQO=vli_evqo, Low=L, Medium=M, High=H) %>% 
+#format table
+kable() %>%  
+  row_spec(5, bold=T)  %>%
+  add_header_above(c(" ", "VAC" = 3))
+```
+
+```{r}
+dbGetQuery(db,'
+  select vli_evqo, vli_vac, count(gr_skey) total
+  from tsa43_res
+  where vli_evqo is not null
+  group by 1,2 order by 1,2;
+') %>%  
+  #reorder the landbase for the graph
+  mutate(
+    vli_vac = vli_vac %>% fct_relevel('H', 'M', 'L'),
+  ) %>%
+  #plot bar graph
+  ggplot(aes(vli_evqo, total, fill=vli_vac)) +
+  	geom_bar(stat="identity") +
+    scale_fill_manual(values = c('#8ae234', '#73d216', '#4e9a06'),
+    name = "VAC",
+    labels = c("High", "Medium", "Low")) +
+    ggtitle("Visually Sensitive Areas") +
+    xlab("VQO") + 
+    ylab("Total Area (hectares)") +
+    gg_theme
+```
+\
+
+## Visual Constraints
+
+**Data Package Section 6.3.7**
+
+* There are 349 unique polygons but vli_poly is not numbered sequentially
+* vli_vsu_number is all NULL
+* Only 90 visual polygons are made known
+
+The vli_poly will be used to identify the constraint population.  A concatenate of vli_vac and and vli_evqo will be used to indentify the constraints to apply. An underscore is used to separate the attributes.
+
+```{sql, warning=F, class.source = 'fold-show'}
+alter table tsa43_dataprep
+  add column vli_poly numeric,
+  add column vli_target text;
+```
+
+```{sql class.source = 'fold-show'}
+update tsa43_dataprep dp set 
+  vli_poly = res.vli_poly,
+  vli_target = concat_ws('_', res.vli_vac, res.vli_evqo)
+from tsa43_res res
+where 
+  vli_made_known = 'Y'
+  and dp.gr_skey = res.gr_skey;
+```
+
+* There are 11 unique combinations of vli_target within the made known visual polygons
+
+```{r}
+dbGetQuery(db,'
+  select vli_target, sum(cflb_fact) cflb, sum(cflb_fact*thlb_fact) thlb
+  from tsa43_dataprep
+  where vli_target is not null
+  group by 1 order by 1;
+') %>% 
+bind_rows(summarise_if(., is.numeric, sum, na.rm=T)) %>% 
+kable() %>% 
+  row_spec(12, bold=T)
+```
+
+```{r}
+dbGetQuery(db,'
+  select  
+    vli_target, sum(1-cflb_fact) nonfor, 
+    sum(cflb_fact-(cflb_fact*thlb_fact)) nonthlb, sum(cflb_fact*thlb_fact) thlb
+  from tsa43_dataprep
+  where vli_target is not null
+  group by 1 order by 1;
+') %>%  
+  #gather the cflb and nonfor areas into one column
+  gather(nonfor, nonthlb, thlb, key = 'landbase', value = 'area') %>%
+  #reorder the landbase for the graph
+  mutate(
+    landbase = landbase %>% fct_relevel('nonfor', 'nonthlb', 'thlb'),
+  ) %>%
+  #plot bar graph
+  ggplot(aes(vli_target, area, fill=landbase)) +
+  	geom_bar(stat="identity") +
+    scale_fill_manual(values = c('#555753', '#73d216', '#4e9a06'),
+    name = '',
+    labels = c('Non-CFLB', 'CFLB', 'THLB') ) +
+    ggtitle("Visual Constraints") +
+    xlab("VAC_VQO") + 
+    ylab("Area (hectares)") +
+    gg_theme
+```
+
+```{r, fig.width=8}
+vliMapData <- st_read(db, query='
+  select vli_target, st_union(wkb_geometry)
+  from tsa43_dataprep
+  where vli_target is not null
+  group by 1 order by 1;
+') 
+
+bnd +
+tm_shape(vliMapData %>% filter(str_sub(vli_target,1,1)=='M')) + 
+  tm_fill(col='vli_target', palette = 'Greens', title = 'VAC_VQO') + 
+tm_shape(vliMapData %>% filter(str_sub(vli_target,1,1)=='H')) + 
+  tm_fill(col='vli_target', palette = 'Reds', title = '') +
+tm_shape(vliMapData %>% filter(str_sub(vli_target,1,1)=='L')) + 
+  tm_fill(col='vli_target', palette = 'Blues', title = '') +
+tm_layout(frame = FALSE, legend.outside = TRUE)
+```
+\
+
+# Disturbance Outside the THLB
+
+**Data Package Section 5.14.4**
+
+Calculate the periodic area to be disturbed.
+Query data to fill in spreadsheet `BECInfo.xlsx`.
+
+```{r}
+dbGetQuery(db,'
+  select 
+    substr(res.bgc_label,1,4) bgc_label, bec_ndt, 
+    sum(net.cflb_fact-(net.cflb_fact*net.thlb_fact)) cflb
+  from tsa43_res res
+  left join tsa43_netdown net
+  on res.gr_skey = net.gr_skey
+  where net.cflb_fact > 0
+  group by 1,2 order by 1,2;
+') %>% 
+  spread(bec_ndt, cflb) %>% 
+  bind_rows(
+    summarise_if(., is.numeric, sum, na.rm=T) %>% 
+    mutate(bgc_label = 'Total') 
+  ) %>% 
+  select('BEC Label' = bgc_label, NDT1, NDT2, NDT3, NDT5) %>% 
+  kable() %>%  
+    row_spec(7, bold=T)  %>%
+    add_header_above(c(" ", "Natural Disturbance Type" = 4))
+```
+\
+
+# Mixed Deciduous
+
+**Data Package Section 6.1.3**
+
+It is assumed that all deciduous within stands will be maintained perpetually within the SRMP area. A yield/area reduction factor to represent the existing deciduous was created based on totalling all the deciduous between secondary and senary species.
+
+```{sql, warning=F, class.source = 'fold-show'}
+alter table tsa43_dataprep
+  add column decid_fact numeric;
+```
+
+```{sql class.source = 'fold-show'}
+update tsa43_dataprep dp set decid_fact =
+	case when res.spec_cd_2 in ('AC','ACT','AT','DR','E','EP') then res.spec_pct_2 else 0 end +
+	case when res.spec_cd_3 in ('AC','ACT','AT','DR','E','EP') then res.spec_pct_3 else 0 end +
+	case when res.spec_cd_4 in ('AC','ACT','AT','DR','E','EP') then res.spec_pct_4 else 0 end +
+	case when res.spec_cd_5 in ('AC','ACT','AT','DR','E','EP') then res.spec_pct_5 else 0 end +
+	case when res.spec_cd_6 in ('AC','ACT','AT','DR','E','EP') then res.spec_pct_6 else 0 end
+from tsa43_res res
+where res.rmp_strgc_name = 'Nass South Sustainable Resource Management Plan'
+and dp.gr_skey = res.gr_skey;
+```
+
+The exported decid_fact will be used directly as VDYP_OAF in the SELES model.
+
+* I was worried about this reduction being applied aspatially until I totalled the THLB impact
+* Only an equivalent of 1,753 ha will be excluded due to this factor
+
+
+```{r}
+dbGetQuery(db,'
+  select 
+    round(decid_fact/10.0)*10 decid_fact, 
+    sum(1-cflb_fact) nonfor, sum(cflb_fact-(cflb_fact*thlb_fact)) nonthlb,
+    sum(cflb_fact*thlb_fact) thlb, sum(cflb_fact*thlb_fact*decid_fact/100.0) thlb_excl
+  from tsa43_dataprep
+  where decid_fact > 0
+  group by 1 order by 1;
+') %>% 
+bind_rows(
+    summarise_if(., is.numeric, sum, na.rm=T) %>% 
+    mutate(decid_fact = NA) 
+) %>%  
+kable() %>%  
+    row_spec(8, bold=T)
+```
+
+```{r, fig.width=8}
+decidMapData <- st_read(db, query='
+  select round(decid_fact/10.0)*10 decid_fact, st_union(wkb_geometry)
+  from tsa43_dataprep
+  where decid_fact > 0
+  group by 1;
+') 
+tm_shape(decidMapData) + 
+  tm_fill('decid_fact', palette = 'Greens', title = 'Deciduous') + 
+  tm_layout(frame = FALSE, legend.position = c('right','top')) + srmp + bnd
+```
+\
+
+# Age Depletion
+
+The inventory projected age was not completely up to date for recent (and some past) harvesting.
+
+* The VRI `extract(year from hrvstdt)` matches the consolidated cutblocks harvest_year in all but 55 ha in the resultant
+* The total area requiring depletions was 1186 ha CFLB, 976 ha THLB
+
+```{r}
+dbGetQuery(db,'
+  select harvest_year, proj_age_1-(2017-harvest_year) residual, sum(cflb_fact) area
+	from tsa43_res
+	where 
+	  harvest_year > ref_year and 
+	  proj_age_1-(2017-harvest_year) is not null
+	group by 1,2 order by 1,2;
+') %>% 
+ggplot(aes(harvest_year, residual)) + geom_point(shape=1, aes(size=area)) + gg_theme
+```
+
+```{r}
+dbGetQuery(db,'
+  select 
+    proj_age_1-(2017-harvest_year) residual, sum(included) total, 
+    sum(cflb_fact) cflb, sum(thlb_fact) thlb
+	from tsa43_res
+	where 
+	  harvest_year > ref_year and 
+	  proj_age_1-(2017-harvest_year) > 10
+	group by 1 order by 1;
+') %>% 
+mutate(residualCls = cut(residual, seq(0, 340, 20))) %>% 
+select(-residual) %>% 
+group_by(residualCls) %>% summarise_if(is.numeric, sum) %>% 
+bind_rows(
+    summarise_if(., is.numeric, sum, na.rm=T) 
+) %>%  
+kable() %>%  
+    row_spec(16, bold=T)
+```
+
+Create a new model age that is updated for harvest depletions.  This age will be exported for use in SELES.
+
+* Noted a consistent scattering of area with null age for areas classified as BCLCS level 3 which is vegetated treed uplands (opposite of wetlands)
+
+
+```{sql, warning=F, class.source = 'fold-show'}
+alter table tsa43_dataprep
+  add column age integer;
+```
+
+Project the VRI age to 2019
+
+* The 2018 VRI is projected to Jan 1, 2017 
+* The consolidated cutblocks year is current to the end to 2018
+* Add add two years to align for a model projection starting in 2019
+
+```{sql, warning=F, class.source = 'fold-show'}
+update tsa43_dataprep dp set  
+  age = proj_age_1 + 2
+from tsa43_res res
+where 
+  dp.gr_skey = res.gr_skey;
+```
+
+Now update it for depletions relative to harvest year.  
+
+* Limited to only havesting that occurred after the photo interpretation reference year since the photo interpretation would be a better check of age at that time. 
+* Also, added a condition that the difference must be greater than 10 years to avoid changing only minor differences - we are looking for harvesting that was completely missed.
+
+
+```{sql class.source = 'fold-show'}
+update tsa43_dataprep dp set  
+  age = 2019 - harvest_year
+from tsa43_res res
+where 
+  harvest_year > ref_year and 
+  proj_age_1 - (2019 - harvest_year) > 10 and 
+  dp.gr_skey = res.gr_skey;
+```
+\
+
+# Biodiversity
+
+**Data Package Section 5.14.1	Seral stage requirements**
+
+Two seral constraints are applied for biodiversity: 'old' and 'mature plus old'. Constraints were evaluated and constructed in the spreadsheet `srmpBiodiversity.xlsx`.
+
+```{sql, warning=F, class.source = 'fold-show'}
+alter table tsa43_dataprep
+  add column biod_old_lb text,
+  add column biod_old_con text,
+  add column biod_mat_lb text,
+  add column biod_mat_con text;
+```
+\
+
+## Old Seral Retention
+
+I confirmed that the Provincial Non-Spatial Old Growth Order matched the 'old' targets in the SRMP Order. They matched exactly so I created a constraint for the whole TSA using the NSOG Order targets just using NDT/BEC/BEO. Laura Bolster noted that the OGMA do not meet the full old targets so the NSOG Order should be applied in addition to OGMA.
+
+Classify the land base under the 'old' seral constraint.
+
+```{sql class.source = 'fold-show'}
+update tsa43_dataprep dp set 
+  biod_old_lb = case
+    when bec_ndt = 'NDT1' and bec_zone = 'CWH' and lu_beo = 'Intermediate' then '1_CWH_I'
+    when bec_ndt = 'NDT1' and bec_zone = 'ESSF' and lu_beo = 'Intermediate' then '1_ESSF_I'
+    when bec_ndt = 'NDT1' and bec_zone = 'ESSF' and lu_beo = 'Low' then '1_ESSF_L'
+    when bec_ndt = 'NDT1' and bec_zone = 'ICH' and lu_beo = 'Intermediate' then '1_ICH_I'
+    when bec_ndt = 'NDT1' and bec_zone = 'ICH' and lu_beo = 'Low' then '1_ICH_L'
+    when bec_ndt = 'NDT1' and bec_zone = 'MH' and lu_beo = 'High' then '1_MH_H'
+    when bec_ndt = 'NDT1' and bec_zone = 'MH' and lu_beo = 'Intermediate' then '1_MH_I'
+    when bec_ndt = 'NDT1' and bec_zone = 'MH' and lu_beo = 'Low' then '1_MH_L'
+    when bec_ndt = 'NDT2' and bec_zone = 'CWH' and lu_beo = 'High' then '2_CWH_H'
+    when bec_ndt = 'NDT2' and bec_zone = 'CWH' and lu_beo = 'Intermediate' then '2_CWH_I'
+    when bec_ndt = 'NDT2' and bec_zone = 'CWH' and lu_beo = 'Low' then '2_CWH_L'
+    when bec_ndt = 'NDT2' and bec_zone = 'ICH' and lu_beo = 'High' then '2_ICH_H'
+    when bec_ndt = 'NDT2' and bec_zone = 'ICH' and lu_beo = 'Intermediate' then '2_ICH_I'
+    when bec_ndt = 'NDT2' and bec_zone = 'ICH' and lu_beo = 'Low' then '2_ICH_L'
+    when bec_ndt = 'NDT3' and bec_zone = 'ESSF' and lu_beo = 'Intermediate' then '3_ESSF_I'
+    when bec_ndt = 'NDT3' and bec_zone = 'ESSF' and lu_beo = 'Low' then '3_ESSF_L'
+    when bec_ndt = 'NDT3' and bec_zone = 'SBS' and lu_beo = 'Intermediate' then '3_SBS_I'
+    when bec_ndt = 'NDT3' and bec_zone = 'SBS' and lu_beo = 'Low' then '3_SBS_L'
+  end
+from tsa43_res res
+where 
+  dp.cflb_fact > 0 and
+  dp.gr_skey = res.gr_skey;
+```
+
+Assign the constraint to be applied.
+
+```{sql class.source = 'fold-show'}
+update tsa43_dataprep dp set 
+  biod_old_con = case
+    when bec_ndt = 'NDT1' and bec_zone = 'CWH' and lu_beo = 'Intermediate' then 'a250p13'
+    when bec_ndt = 'NDT1' and bec_zone = 'ESSF' and lu_beo = 'Intermediate' then 'a250p19'
+    when bec_ndt = 'NDT1' and bec_zone = 'ESSF' and lu_beo = 'Low' then 'a250p19'
+    when bec_ndt = 'NDT1' and bec_zone = 'ICH' and lu_beo = 'Intermediate' then 'a250p13'
+    when bec_ndt = 'NDT1' and bec_zone = 'ICH' and lu_beo = 'Low' then 'a250p13'
+    when bec_ndt = 'NDT1' and bec_zone = 'MH' and lu_beo = 'High' then 'a250p28'
+    when bec_ndt = 'NDT1' and bec_zone = 'MH' and lu_beo = 'Intermediate' then 'a250p19'
+    when bec_ndt = 'NDT1' and bec_zone = 'MH' and lu_beo = 'Low' then 'a250p19'
+    when bec_ndt = 'NDT2' and bec_zone = 'CWH' and lu_beo = 'High' then 'a250p13'
+    when bec_ndt = 'NDT2' and bec_zone = 'CWH' and lu_beo = 'Intermediate' then 'a250p9'
+    when bec_ndt = 'NDT2' and bec_zone = 'CWH' and lu_beo = 'Low' then 'a250p9'
+    when bec_ndt = 'NDT2' and bec_zone = 'ICH' and lu_beo = 'High' then 'a250p13'
+    when bec_ndt = 'NDT2' and bec_zone = 'ICH' and lu_beo = 'Intermediate' then 'a250p9'
+    when bec_ndt = 'NDT2' and bec_zone = 'ICH' and lu_beo = 'Low' then 'a250p9'
+    when bec_ndt = 'NDT3' and bec_zone = 'ESSF' and lu_beo = 'Intermediate' then 'a140p14'
+    when bec_ndt = 'NDT3' and bec_zone = 'ESSF' and lu_beo = 'Low' then 'a140p14'
+    when bec_ndt = 'NDT3' and bec_zone = 'SBS' and lu_beo = 'Intermediate' then 'a140p11'
+    when bec_ndt = 'NDT3' and bec_zone = 'SBS' and lu_beo = 'Low' then 'a140p11'
+  end
+from tsa43_res res
+where 
+  dp.cflb_fact > 0 and
+  dp.gr_skey = res.gr_skey;
+```
+
+Summarize the area covered by the constraint.
+
+* The current netdown has a CFLB of 557,353 ha
+* Not all of the BEC were covered by the Old Growth Order so there is 4577 ha of CFLB with no constraint
+
+```{r}
+dbGetQuery(db,'
+  select biod_old_lb, biod_old_con, sum(cflb_fact) cflb, sum(cflb_fact*thlb_fact) thlb
+  from tsa43_dataprep
+  where biod_old_lb is not null
+  group by 1,2 order by 1,2;
+') %>% 
+bind_rows(summarise_if(., is.numeric, sum, na.rm=T)) %>% 
+rename('Land Base' = biod_old_lb, 'Constraint' = biod_old_con) %>%
+kable() %>% 
+  row_spec(19, bold=T)
+```
+
+Confirm the area not covered by the Old Growth Order. 
+
+* It is all high elevation BEC in NDT 5
+* Interesting that there is some THLB in the Mountain Hemlock
+
+```{r}
+dbGetQuery(db,'
+  select bec_ndt, bec_zone, lu_beo, sum(dp.cflb_fact) cflb, sum(dp.cflb_fact*dp.thlb_fact) thlb
+  from tsa43_dataprep dp
+  left join tsa43_res res
+  on dp.gr_skey = res.gr_skey
+  where biod_old_lb is null and dp.cflb_fact > 0
+  group by 1,2,3 order by 1,2,3;
+') %>% 
+bind_rows(summarise_if(., is.numeric, sum, na.rm=T)) %>% 
+kable() %>% 
+  row_spec(8, bold=T)
+```
+
+
+Map the extent of the constraint.
+
+```{r, fig.width=10}
+boidOldMapData <- st_read(db, query='
+  select biod_old_lb, biod_old_con, st_union(wkb_geometry)
+  from tsa43_dataprep
+  where biod_old_lb is not null
+  group by 1,2;
+') 
+tmap_arrange(
+  tm_shape(boidOldMapData) + 
+    tm_fill('biod_old_lb', title='Old Land Base') + 
+    tm_layout(frame = FALSE) + bnd,
+
+  tm_shape(boidOldMapData) + 
+    tm_fill('biod_old_con', title='Old Constraints') + 
+    tm_layout(frame = FALSE) + bnd
+)
+```
+\
+
+## Mature Plus Old Seral Retention
+
+The 'mature plus old' targets from the SRMP did not match up well with the LU/BEC within the SRMP area from the resultant data. Laura Bolster confirmed that it may not have been comprehensive at the time and that BEC mapping may have been revised since. She recommended that the constraints are only applied where matches occur and the remaining area is free of 'mature plus old' constraints.
+
+* All ICH mc 1a combined with normal ICH mc 1 (Brown Bear 66ha, Kinskuch 14,165ha, Tchitin 4,189ha)
+
+Classify the land base under the 'mature plus old' constraint.
+
+```{sql  class.source = 'fold-show'}
+update tsa43_dataprep dp set 
+  biod_mat_lb = case
+    when lu_name = 'Bear' and bgc_label = 'CWH wm' then 'Bear_CWHwm'
+    when lu_name = 'Bear' and bgc_label = 'MH  mm 2' then 'Bear_MHmm2'
+    when lu_name = 'Bear' and bgc_label = 'MH  mmp' then 'Bear_MHmmp'
+    when lu_name = 'Bowser' and bgc_label = 'ICH vc' then 'Bowser_ICHvc'
+    when lu_name = 'Brown Bear' and bgc_label in ('ICH mc 1','ICH mc 1a') then 'BrownBear_ICHmc1'
+    when lu_name = 'Cambria Icefield' and bgc_label = 'MH  mm 2' then 'CambriaIcefield_MHmm2'
+    when lu_name = 'Kinskuch' and bgc_label in ('ICH mc 1','ICH mc 1a') then 'Kinskuch_ICHmc1'
+    when lu_name = 'Kinskuch' and bgc_label = 'ICH vc' then 'Kinskuch_ICHvc'
+    when lu_name = 'Kwinamuck' and bgc_label = 'CWH ws 2' then 'Kwinamuck_CWHws2'
+    when lu_name = 'Kwinamuck' and bgc_label = 'MH  mm 2' then 'Kwinamuck_MHmm2'
+    when lu_name = 'Madely' and bgc_label = 'ICH mc 1' then 'Madely_ICHmc1'
+    when lu_name = 'Madely' and bgc_label = 'ICH vc' then 'Madely_ICHvc'
+    when lu_name = 'Tchitin' and bgc_label = 'CWH ws 2' then 'Tchitin_CWHws2'
+    when lu_name = 'Tchitin' and bgc_label in ('ICH mc 1','ICH mc 1a') then 'Tchitin_ICHmc1'
+    when lu_name = 'Tchitin' and bgc_label = 'MH  mm 2' then 'Tchitin_MHmm2'
+    when lu_name = 'Tintina' and bgc_label = 'ICH mc 1' then 'Tintina_ICHmc1'
+    when lu_name = 'Tintina' and bgc_label = 'ICH vc' then 'Tintina_ICHvc'
+    when lu_name = 'White' and bgc_label = 'ICH mc 1' then 'White_ICHmc1'
+    when lu_name = 'White' and bgc_label = 'ICH vc' then 'White_ICHvc'
+    when lu_name = 'White' and bgc_label = 'MH  mm 2' then 'White_MHmm2'
+    when lu_name = 'Wildfire' and bgc_label = 'ICH vc' then 'Wildfire_ICHvc'
+  end
+from tsa43_res res
+where 
+  dp.cflb_fact > 0 and
+  rmp_strgc_name = 'Nass South Sustainable Resource Management Plan' and 
+  dp.gr_skey = res.gr_skey;
+```
+
+Assign the constraint to be applied.
+
+```{sql class.source = 'fold-show'}
+update tsa43_dataprep dp set 
+  biod_mat_con = case
+    when lu_name = 'Bear' and bgc_label = 'CWH wm' then 'a80p36'
+    when lu_name = 'Bear' and bgc_label = 'MH  mm 2' then 'a120p36'
+    when lu_name = 'Bear' and bgc_label = 'MH  mmp' then 'a120p22'
+    when lu_name = 'Bowser' and bgc_label = 'ICH vc' then 'a100p17'
+    when lu_name = 'Brown Bear' and bgc_label  in ('ICH mc 1','ICH mc 1a') then 'a100p15'
+    when lu_name = 'Cambria Icefield' and bgc_label = 'MH  mm 2' then 'a120p19'
+    when lu_name = 'Kinskuch' and bgc_label in ('ICH mc 1','ICH mc 1a') then 'a100p31'
+    when lu_name = 'Kinskuch' and bgc_label = 'ICH vc' then 'a100p34'
+    when lu_name = 'Kwinamuck' and bgc_label = 'CWH ws 2' then 'a80p17'
+    when lu_name = 'Kwinamuck' and bgc_label = 'MH  mm 2' then 'a120p19'
+    when lu_name = 'Madely' and bgc_label  = 'ICH mc 1' then 'a100p31'
+    when lu_name = 'Madely' and bgc_label = 'ICH vc' then 'a100p34'
+    when lu_name = 'Tchitin' and bgc_label = 'CWH ws 2' then 'a80p51'
+    when lu_name = 'Tchitin' and bgc_label in ('ICH mc 1','ICH mc 1a') then 'a100p46'
+    when lu_name = 'Tchitin' and bgc_label = 'MH  mm 2' then 'a120p54'
+    when lu_name = 'Tintina' and bgc_label = 'ICH mc 1' then 'a100p15'
+    when lu_name = 'Tintina' and bgc_label = 'ICH vc' then 'a100p17'
+    when lu_name = 'White' and bgc_label = 'ICH mc 1' then 'a100p31'
+    when lu_name = 'White' and bgc_label = 'ICH vc' then 'a100p34'
+    when lu_name = 'White' and bgc_label = 'MH  mm 2' then 'a120p36'
+    when lu_name = 'Wildfire' and bgc_label = 'ICH vc' then 'a100p34'
+  end
+from tsa43_res res
+where 
+  dp.cflb_fact > 0 and
+  rmp_strgc_name = 'Nass South Sustainable Resource Management Plan' and 
+  dp.gr_skey = res.gr_skey;
+```
+
+Summarize the area covered by the constraint.
+
+```{r}
+dbGetQuery(db,'
+  select biod_mat_lb, biod_mat_con, sum(cflb_fact) cflb, sum(cflb_fact*thlb_fact) thlb
+  from tsa43_dataprep
+  where biod_mat_lb is not null
+  group by 1,2 order by 1,2;
+') %>% 
+bind_rows(summarise_if(., is.numeric, sum, na.rm=T)) %>%
+rename('Land Base' = biod_mat_lb, 'Constraint' = biod_mat_con) %>% 
+kable() %>% 
+  row_spec(22, bold=T)
+```
+
+Map the extent of the constraint.
+
+```{r, fig.width=10}
+boidMatMapData <- st_read(db, query='
+  select biod_mat_lb, biod_mat_con, st_union(wkb_geometry)
+  from tsa43_dataprep
+  where biod_mat_lb is not null
+  group by 1,2;
+') 
+tmap_arrange(
+  tm_shape(boidMatMapData) + 
+    tm_fill('biod_mat_lb', title='Mature Land Base') + 
+    tm_layout(frame = FALSE, legend.outside = TRUE) + srmp + bnd,
+
+  tm_shape(boidMatMapData) + 
+    tm_fill('biod_mat_con', title='Mature Constraints') + 
+    tm_layout(frame = FALSE, legend.outside = TRUE) + srmp + bnd
+)
+```
+\
+
+# Adjacency
+
+**Data Package Section 6.3.1**
+
+The SRMP includes objectives for adjacency, green-up and patch size distribution but, due to modelling limitations, these will all be respresented by a general disturbance constraint. In the old days this was called the Integreated Resources Management (IRM) constraint so I will continue to use this term for my scripting.
+
+* The land base is the THLB by landscape unit
+* The constraint is no more than 35% below 3m height
+
+Height tables were provided with the Provincial TIPSY output from Dave Waddel.
+
+```{sql, warning=F, class.source = 'fold-show'}
+alter table tsa43_dataprep
+  add column irm_lb text,
+  add column irm_con numeric;
+```
+
+The land base is simply the LU name assigned within the THLB. There is only one constraint applied so a value of 1 is assigned to all the THLB area.
+
+```{sql class.source = 'fold-show'}
+update tsa43_dataprep dp set 
+  irm_lb = res.lu_name,
+  irm_con = 1
+from tsa43_res res
+where 
+  dp.thlb_fact > 0 and dp.cflb_fact > 0
+  and dp.gr_skey = res.gr_skey;
+```
+
+Do any area summary to make sure the THLB is covered.
+
+* The current netdown has a THLB of 211,796 ha so this is a match.
+
+```{r}
+dbGetQuery(db,'
+  select irm_lb, sum(cflb_fact) cflb, sum(cflb_fact*thlb_fact) thlb
+  from tsa43_dataprep
+  where irm_lb is not null
+  group by 1 order by 1;
+') %>% 
+bind_rows(summarise_if(., is.numeric, sum, na.rm=T)) %>%
+rename('Landscape Unit' = irm_lb) %>% 
+kable() %>% 
+  row_spec(17, bold=T)
+```
+
+It is not really needed but might as well map the extent of the constraint.
+
+* It is clear tha Upper Nass is excluded from the THLB
+
+```{r, fig.width=8}
+irmMapData <- st_read(db, query='
+  select irm_lb, st_union(wkb_geometry)
+  from tsa43_dataprep
+  where irm_lb is not null
+  group by 1;
+') 
+tm_shape(irmMapData) + 
+  tm_fill('irm_lb', title = 'Landscape Unit') + 
+  tm_layout(frame = FALSE, legend.outside = TRUE) + bnd
+```
+
+Just because the data are there and we can...
+
+```{r, fig.width=10}
+tm_shape(irmMapData) + 
+  tm_fill('irm_lb') + 
+  tm_layout(frame = FALSE, legend.show = F) +
+  tm_facets(by = 'irm_lb')
+```
+

@@ -1,0 +1,1621 @@
+---
+title: "Nass TSA Netdown"
+author: "G Nienaber"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    theme: simplex
+    highlight: tango
+    df_print: paged
+---
+
+[comment]: # Change the menu bar color and font size
+[comment]: # code.r is code block text and pre is for output of knitr chunks
+<style>
+  .list-group-item.active, .list-group-item.active:focus, .list-group-item.active:hover {background-color: #4e9a06;}
+  body, td {font-size: 14px;}
+  code.r {font-size: 14px;}
+  pre {font-size: 14px}
+</style>
+
+```{r setup, include=FALSE}
+
+#Code Chunk
+knitr::opts_chunk$set(echo = TRUE)
+
+#Libraries
+library(DBI)
+library(tidyr)
+library(dplyr)
+library(forcats)
+library(ggplot2)
+library(kableExtra)
+
+#Postgres
+db = dbConnect(RPostgreSQL::PostgreSQL(), host="localhost", user = "postgres")
+knitr::opts_chunk$set(connection = "db")
+knitr::opts_knit$set(sql.max.print = NA)
+
+#ggplot default theme options
+#knitr::opts_chunk$set(fig.height = 4, collapse = TRUE)
+gg_theme <- theme_minimal() + theme(axis.text.x = element_text(angle = 30, hjust = 1))
+
+#kable
+options(knitr.kable.NA = '')
+
+#kable default table
+kable <- function(data) {
+  knitr::kable(data, digits = 0, format.args = list(big.mark = ",")) %>% 
+  kable_styling(bootstrap_options = "striped", full_width = TRUE)
+}
+
+
+```
+
+
+# Netdown Resultant
+
+A resultant was created specifically for the netdown process. The key `gr_skey` was maintained for returning the results and mapping with the Provincial grid. 
+
+The area within the TSA boundary was identified where the `gr_skey` values are positive. All areas outside of the TSA boundary were deleted to increase processing speed. The attribute `included` was added with a value of 1 for everywhere in the TSA to match the analysis ready data set format and simplify total area summaries.
+
+\  
+```{sql netdownResultant, eval=T}
+drop table if exists tsa43_netdown;
+create table tsa43_netdown as (
+  select
+    ogc_fid,
+    gr_skey,
+    feature_id,
+    bclcs_lv_1,
+    bclcs_lv_3,
+    bclcs_lv_2,
+    bclcs_lv_4,
+    site_index,
+    spec_cd_1,
+    proj_age_1,
+    np_desc,
+    harvest_year,
+    f_own_code own,     
+    f_own_schedule schedule,
+    lu_name,
+    bgc_label,
+    ogma_provid,
+    rec_type,
+    zone_name,
+    eca_thrshd,
+    eco_network,
+    eco_net_buffer,
+    gen_wildlife,
+    kwin_river,
+    water_mu,
+    uwr_noharvest,
+    silv_polygon_no,
+    wha_harv_code,
+    sample_number,
+    bordennumber,
+    cws_name
+  from tsa43_res
+  where gr_skey > 0
+);
+
+alter table tsa43_netdown add column included int default 1;
+```
+\
+
+The attributes for tracking Crown Forest Land Base (CFLB) and Timber Harvesting Land Base (THLB) were created. These are float values representing percent inclusion. The entire TSA is assumed 100% included by default to start. The two factors are used multiplicatively in the timber supply model so it is possible for THLB to be within the non-CFLB. 
+
+Attributes are also created for tracking each of the netdown factors. The full THLB exclusions are tracked using text attributes (starting with 'n') so descriptions of the exclusions can be recorded. Paritial exclusion netdown factors are tracked with numeric attributes (starting with 'p') for recording the percentage of each hectare within the THLB.  
+
+\
+```{sql createThlb, eval=T}
+alter table tsa43_netdown
+  add column cflb_fact numeric default 1.0,
+  add column thlb_fact numeric default 1.0,
+  add column thlb_net numeric default 1.0,
+  add column n01_ownership text,
+  add column n02_nonfor text,
+  add column p03_road numeric default 1.0,
+  add column n04_park text,
+  add column n05_recsite text,
+  add column n06_rectrail text,
+  add column p06_rectrail numeric default 1.0,
+  add column n07_inoperable text,
+  add column n08_uppernass text,
+  add column n09_lowsite text,
+  add column n10_decid text,
+  add column n11_ogma text,
+  add column n12_econet text,
+  add column p12_econet numeric default 1.0,
+  add column n13_wtra text,
+  add column n14_riparian text,
+  add column p14_riparian numeric default 1.0,
+  add column n15_watershed text,
+  add column n16_wha text,
+  add column n17_genwild text,
+  add column n18_arch text,
+  add column n19_psp text,
+  add column n20_cws text,
+  add column n21_uwr text,
+  add column n22_pinemush text;
+```
+\
+
+The traditional netdown summary table in the Data Package is structured in way that presents a sequential "area excluded". This area excluded total differs from the total of (1-thlb_fact) in that it accounts for all prior netdown reductions as well. So an additional variable 'thlb_net' was created to track the sequential area removed to be reported in the netdown table.
+
+\
+```{sql createNetdown, eval=T}
+drop table if exists tsa43_netdowntable;
+create table tsa43_netdowntable (
+	landclass text,
+	total numeric,
+	percent numeric,
+	excluded numeric
+);
+```
+\
+
+# Timber Supply Area Boundary
+
+The area outside of the TSA boundary was excluded when the netdown table was created using the `included` attribute.
+
+\
+```{sql tsaNetdown, output.var="tsa", echo=F}
+insert into tsa43_netdowntable (landclass, total)
+	select 'TSA boundary', sum(included)
+	from tsa43_netdown;
+```
+
+```{sql tsaSummary, output.var="tsa", echo=F}
+select  included "Included", sum(included) "Total"
+from tsa43_netdown
+group by 1 order by 1;
+```
+
+```{r tsaTable, echo=F}
+tsa %>% 
+  # make table look pretty by replacing 1 with TSA name
+  mutate(Included = 'Nass TSA') %>% 
+  kable()
+```
+\
+
+
+## Non-Provincial Crown Lands
+
+The non-provincial crown lands were removed using the ownership layer. The attributes `own` and `schedule` were used but the schedule did not change for each ownership so it was not referenced in the script. 
+
+At this time it was found that the resultant included 2 ha classified as TFL even though no TFLs exist within the TSA. This was likely due to a silver of overlap with adjacent TFL 1. Since there are no area-based licence removals this was cleaned up at this stage to ensure all ownership codes are accounted. 
+
+No area came out under ownership code 52 Federal Indian Reserve. It was confirmed that no reserves exist in the TSA using the layer WHSE_ADMIN_BOUNDARIES.CLAB_INDIAN_RESERVES cited in the Data Package. The exclusion of the Nisga'a Treaty Land under ownership code 41 Land Claim Settlement Area was confirmed using the layer WHSE_LEGAL_ADMIN_BOUNDARIES.FNT_TREATY_LAND_SP cited in the Data Package.
+
+After the following parks/protected area and the recreation netdown steps that also use the ownership attribute the only remaining ownership code in the THLB was 62 (Crown - Forest Management Unit) and some of 69 (Crown - Misc. Reserves
+).
+
+During the Data Package review, an error was found in the Recreation Sites and Trails section which used the ownership code to identify UREP reserves. The 2019 version of the ownership layer had this issue corrected so the netdown was updated to use this layer instead of the 2018 analysis ready version.
+
+\
+```{sql nonCrown, eval=T}
+-- set nulls to 91 U - Unknown Ownership/Exceptions
+update tsa43_netdown set 
+  own = coalesce(own,91),
+  schedule = coalesce(schedule,'U');
+
+update tsa43_netdown set 
+  n01_ownership = case
+    when own = 40 then 'Private'
+    when own = 80 then 'Municipal Parcels'
+    when own = 54 then 'Federal Reserve'
+    when own = 41 then 'Land Claim Settlement Area'
+    when own = 52 then 'Federal Indian Reserve'
+    when own = 72 then 'Tree Farm Licence'
+    when own = 99 then 'Crown Lease'
+    when own = 91 then 'Unknown Ownership/Exceptions'
+  end;
+```
+\
+
+```{sql nonCrownNetdown, output.var="nonCrown", echo=F}
+insert into tsa43_netdowntable (landclass, total, percent, excluded)
+	select 'Non-provincial Crown Lands', sum(included), sum(included)/17117.05, sum(thlb_net) 
+	from tsa43_netdown
+	where n01_ownership is not null;
+	
+update tsa43_netdown set thlb_net = 0 where n01_ownership is not null;
+```
+
+```{sql nonCrownSummary, output.var="nonCrown", echo=F}
+select  
+  own::text "Ownership", 
+  schedule "Schedule", 
+  n01_ownership "Description", 
+  sum(included) "Total"
+from tsa43_netdown
+where n01_ownership is not null
+group by 1,2,3 order by 1,2,3;
+```
+
+```{r nonCrownTable, echo=F}
+nonCrown %>% 
+  bind_rows(
+      summarise_if(., is.numeric, sum, na.rm=T) %>% 
+      mutate(Ownership='Total')
+  ) %>% 
+  kable() %>%
+    row_spec(nrow(nonCrown)+1, bold=T)
+```
+\
+
+```{r nonCrownGraph, echo=F, eval=T}
+ggplot(nonCrown, aes(Description, Total)) +
+	geom_bar(stat="identity", fill="#4e9a06") +
+  ggtitle("Non-Provincial Crown Lands") +
+  xlab("Ownership Category") + 
+  ylab("Area Excluded (hectares)") + 
+  gg_theme
+```
+\
+
+## Not Managed Within TSA AAC
+
+No removals were specified in the Data Package for this factor since no area-based tenures exist within the TSA. This was confirmed with the evaluation of the ownership codes above. Only a small overlap sliver with adjacent TFL 1 was found and removed.
+
+When the Ownership layer was updated to 2019 the sliver of TFL 1 was fixed and is no longer present in the data.
+
+\
+
+## Non-Forest and Non-Productive Forest
+
+The non-forest areas were identified using the BC Land Classification System (BCLCS) provided by the VRI. The old FC1 non-productive attributes were also used as a secondary check. 
+
+After the Data Package was released the use of 3m as the site index cut off was questioned. No support of this historic value could be found in any land use plan or legislation. The value was increased to 5m to match the VRI FMLB criteria.
+
+After the Data Package was released and harvest depletions were being run, it was discovered that a significant area was assigned a site index greater than 5m but no projected age was interpretted. This area covers 52,919ha but most was net out of the CFLB except for 9533ha. A comparison with the satellite imagery found that the 5488ha that passed through to be THLB was entirely open meadows with sparse trees. The largest areas were avalanche slides. This area was added to the non-productive netdown under the assumption that if insufficient trees were available to interpret an age then it will not be harvestable. Also avoids arbitrary assignment of age. Placed it at the end as a final catch since it overlaps with np_desc. 
+
+\
+```{sql nonFor, output.var="nonFor", eval=T}
+update tsa43_netdown set 
+  n02_nonfor = case
+  	when bclcs_lv_3 = 'A' then 'Alpine'
+  	when bclcs_lv_1 = 'N' then 'Non-Vegetated'
+  	when bclcs_lv_3 = 'W' then 'Wetlands'
+  	when bclcs_lv_2 = 'N' and bclcs_lv_4 not in ('ST', 'SL') then 'Non-Treed Herb'
+  	when bclcs_lv_4 in ('ST', 'SL') and harvest_year is null then 'Non-Treed Shrub'
+  	when (coalesce(site_index, 0) < 5) and harvest_year is null then 'Non-Productive'
+  	when np_desc is not null and harvest_year is null then 'FC1_' || np_desc
+  	when proj_age_1 is null and harvest_year is null then 'Sparse with No Age'
+  	when bclcs_lv_1 = 'U' or bclcs_lv_1 is null then 'Unclassified'
+  end;
+  
+```
+\
+
+```{sql nonForNetdown, output.var="nonFor", echo=F}
+insert into tsa43_netdowntable (landclass, total, percent, excluded)
+	select 'Non-Forest and Non-Productive Forest', sum(included), sum(included)/17117.05, sum(thlb_net) 
+	from tsa43_netdown
+	where n02_nonfor is not null;	
+
+update tsa43_netdown set thlb_net = 0 where n02_nonfor is not null;
+```
+
+```{sql nonForSummary, output.var="nonFor", echo=F}
+select  
+  n02_nonfor "Description",
+  sum(included) "Total"
+from tsa43_netdown
+where n02_nonfor is not null
+group by 1 order by 1;
+```
+
+```{r, echo=F}
+nonFor %>% 
+  bind_rows(
+    summarise_if(., is.numeric, sum, na.rm=T) %>% 
+    mutate(Description='Total')
+  ) %>% 
+  kable() %>%
+    row_spec(nrow(nonFor)+1, bold=T)
+```
+\
+
+```{r nonForGraph, echo=F, eval=T}
+nonFor %>% 
+  #scale y axis
+  mutate(mm3 = Total/1000000) %>% 
+  ggplot(aes(Description, mm3)) +
+  	geom_bar(stat="identity", fill="#4e9a06") +
+    ggtitle("Non-Forest and Non-Productive Forest") +
+    xlab("Description") + 
+    ylab("Area Excluded (million hectares)")  + 
+    gg_theme
+```
+\
+
+## Roads, Trails, Landings and Linear Corridors
+
+Roads were identified using the consolidated road network layer produced for the cumulative effects projects `BC_CE_IntegratedRoads_2017_v1_20170214.gdb\integratedRoadsBuffers_2017`. 
+
+The right-of-way layer `WHSE_TANTALIS.TA_CROWN_RIGHTS_OF_WAY_SVW` included large non-linear polygons for unsurveyed future projects. Many of the large polygons contained forested area. This layer was considered inappropriate for use in the netdown.
+
+Owen Fritch noted that `WHSE_TANTALIS.TA_CROWN_RIGHTS_OF_WAY_SVW` is not the authoritative representation, it misses a number of genuine cleared right-of-ways (in particular, large portions of the BC Hydro transmission line to Stewart) and includes a number of abandoned or unconstructed highway sections that are now forested. He recommend using a combination of `WHSE_TANTALIS.TA_SURVEYED_ROW_PARCELS_SVW` and `WHSE_TANTALIS.TA_TRANSPORTATION_SVW` which has the full surveyed Highway right-of-way for Highway 37 and most of  Highway 37A to Stewart.
+
+These three road and right-of-way layers were unioned together as one road buffer data source. All the roaded hectares within the TSA were identified with a spatial selection that intersected the road buffer layer with the `tsa43_skey` layer. The road buffer layer was then erased from the `tsa43_skey` selection to produce a layer representing the area outside of road buffers `tsa43_unroaded`. 
+
+The percent unroaded was calculated for each hectare. Since each `tsa43_skey` polygon is 1 ha the area remaining after the erase already represents the percentage of the hectare unroaded. The polygon area was selected from the geometry (`st_area(geom)`) and converted from m^2^ to ha.
+
+The percent unroaded factor was used to adjust the CFLB to account for the forested area permanently lost due to road right-of-ways.
+
+When a partial netdown is applied to the CFLB factor the THLB remains unchanged since it represents the proportion of the remaining forested area that is harvestable. No CFLB description was added since there is only one partial netdown applied to the CFLB so the source of the reduction is a given.
+
+
+\
+```{sql roads, eval=T}  
+update tsa43_netdown set
+  p03_road = pct_unroaded
+from tsa43_unroaded
+where tsa43_unroaded.gr_skey = tsa43_netdown.gr_skey;
+```
+\
+
+```{sql roadsNetdown, output.var="roads", echo=F}
+insert into tsa43_netdowntable (landclass, total, percent, excluded)
+	select 'Roads, Trails, Landings and Linear Corridors', sum(included*(1-p03_road)),
+	sum(included*(1-p03_road))/17117.05, sum(thlb_net*(1-p03_road)) 
+	from tsa43_netdown;
+
+update tsa43_netdown set thlb_net = thlb_net*p03_road;
+```
+
+```{sql roadsSummary, output.var="roads", echo=F}
+--percent roaded is inverse of unroaded, rounded then cast as text for pretty display
+select 
+  round(1-p03_road,1)::text roadpct, 
+  sum(included*(1-p03_road)) "Total"
+from tsa43_netdown
+where p03_road > 0
+group by 1 order by 1;
+```
+
+```{r, echo=F}
+roads %>%
+  mutate(roadpct = replace(roadpct, roadpct=='0.0', '<0.05')) %>% 
+  bind_rows(
+    summarise_if(., is.numeric, sum, na.rm=T) %>% 
+    mutate(roadpct='Total')
+  ) %>% 
+  rename('Percent Roaded' = roadpct) %>% 
+  kable() %>%
+    row_spec(nrow(roads)+1, bold=T)
+```
+\
+
+```{r nonRoadsGraph, echo=F, eval=T}
+ggplot(roads, aes(roadpct, Total)) +
+	geom_bar(stat="identity", fill="#4e9a06") +
+  ggtitle("Roads, Trails, Landings and Linear Corridors") +
+  xlab("Percent Roaded") + 
+  ylab("Area Excluded (hectares)")  + 
+  gg_theme
+```
+\
+
+# Crown Forest Land Base
+
+The removals from the CFLB are complete at this point. All following factors are reductions from the THLB.
+
+The area of CFLB was calculated by multiplying the netdown factors. Complete removals were evaluated as a value of zero when a netdown label was present (the 'is null' boolean returns 'FALSE' and is then cast to the interger zero).
+
+\
+```{sql cflb, output.var="cflb", echo=F}
+update tsa43_netdown set
+  cflb_fact = 
+    (n01_ownership is null)::int *
+    (n02_nonfor is null)::int *
+    p03_road;
+```
+
+```{sql cflbNetdown, output.var="cflb", echo=F}
+insert into tsa43_netdowntable (landclass, total, percent, excluded)
+	select 'Crown forest management land base', sum(thlb_net), sum(thlb_net)/17117.05, NULL 
+	from tsa43_netdown;
+```
+
+```{sql cflbSummary, output.var="cflb", echo=F}
+select included, sum(included) total, sum(cflb_fact) cflb
+from tsa43_netdown
+group by 1 order by 1;
+```
+
+```{r, echo=F}
+cflb %>% 
+  mutate(included = 'Included') %>%
+  rename("Crown Forest Land Base"=included, "Total"=total, "CFLB"=cflb) %>% 
+  kable()
+```
+\
+
+## Provincial Parks & Miscellaneous Reserves
+
+The parks and reserves were identified using the ownership layer. The Tantalis layers `WHSE_TANTALIS.TA_PARK_ECORES_PA_SVW` and `WHSE_TANTALIS.TA_CONSERVANCY_AREAS_SVW` were used to confirm all parks and conservancies were excluded.
+
+\
+```{sql park, eval=T}
+update tsa43_netdown set 
+  n04_park = case
+    when own = 60 then 'Conservancy, Ecological Reserve, Protected Area, Provincial Park'
+    when own = 63 then 'Biodiversity, Mining, Tourism Area'
+    when own = 64 then 'Special Forest Management Area'
+  end;
+```
+\
+
+```{sql parkNetdown, output.var="park", echo=F}
+insert into tsa43_netdowntable (landclass, total, percent, excluded)
+	select 'Provincial Parks and Miscellaneous Reserves', sum(included), sum(included)/17117.05, sum(thlb_net) 
+	from tsa43_netdown
+	where n04_park is not null;	
+
+update tsa43_netdown set thlb_net = 0 where n04_park is not null;
+```
+
+```{sql parkSummary, output.var="park", echo=F}
+select  n04_park thlb_desc, sum(included) total, sum(cflb_fact) cflb
+from tsa43_netdown
+where n04_park is not null
+group by 1 order by 1;
+```
+
+```{r parkTable, echo=F}
+park %>%
+  bind_rows(
+    summarise_if(., is.numeric, sum, na.rm=T) %>% 
+    mutate(thlb_desc='Total')
+  ) %>% 
+  rename("Description"=thlb_desc, "Total"=total, "CFLB"=cflb) %>% 
+  kable() %>%
+    row_spec(nrow(park)+1, bold=T)
+```
+\
+
+```{r parkGraph, echo=F}
+park %>% 
+  mutate(
+    #create nonforest
+    nonfor = total - cflb,
+    #shorten long name
+    thlb_desc = replace(thlb_desc, thlb_desc==
+      'Conservancy, Ecological Reserve, Protected Area, Provincial Park', 
+      'Cons, Eco Res, Protected, Park')
+  ) %>%
+  #gather the cflb and nonfor areas into one column
+  gather(cflb, nonfor, key = 'landbase', value = 'area') %>%
+  #reorder the landbase for the graph
+  mutate(landbase = landbase %>% fct_relevel('nonfor', 'cflb')) %>%
+  #plot bar graph
+  ggplot(aes(thlb_desc, area, fill=landbase)) +
+    geom_bar(stat="identity") +
+    #colour theme
+    scale_fill_manual(values = c("#555753", "#4e9a06"),
+    name = "",
+    labels = c("Non-Forest", "CFLB") ) +
+    #graph title and axis labels
+    ggtitle("Provincial Parks & Miscellaneous Reserves") +
+    xlab("Description") +
+    ylab("Area Excluded (hectares)") + 
+    gg_theme
+```
+\
+
+## Recreation Sites and Trails
+
+The recreastion sites were excluded from the THLB using the layer `WHSE_FOREST_TENURE.FTEN_RECREATION_POLY_SVW` and two of the remaining ownership codes.
+
+The inclusion of UREP was questioned during the Data Package review. When the district was consulted they found that the UREP around a lake has been removed in the 2019 ownership projection. A protected rec site on the lake better represents current management. The district approved of the other UREP zones representing canoe portages should remain excluded from the THLB. Since the ownership was updated to the 2019 version this correction was made in the final netdown.
+
+The netdown for the Data Package used the attribute `rec_site` (proper names) from the analysis ready GDB but in the analysis ready pg_dump table used for the final netdown only contains the attribute `rec_type` (reserves or sites) so this was used instead. All were classified as rec sites except Kwinageese which is a rec reserve. Since all are removed this distiction is not important. The pg_dump table also includes `rec_status` and `rec_retire` which were used to confirm that all currently active.
+
+\
+```{sql recSite, eval=T}
+update tsa43_netdown set
+  n05_recsite = case
+    when rec_type is not null then 'Recreation Site'
+    when own = 61 then 'Use, Recreation and Enjoyment of the Public Reserve'
+    when own = 68 then 'Forest Recreation Reserves'
+  end;
+```
+\
+
+```{sql recSiteNetdown, output.var="recSite", echo=F}
+insert into tsa43_netdowntable (landclass, total, percent, excluded)
+	select 'Recreation Sites', sum(included), sum(included)/17117.05, sum(thlb_net) 
+	from tsa43_netdown
+	where n05_recsite is not null;	
+
+update tsa43_netdown set thlb_net = 0 where n05_recsite is not null;
+```
+
+```{sql recSiteSummary, output.var="recSite", echo=F}
+select n05_recsite thlb_desc, sum(included) total, sum(cflb_fact) cflb
+from tsa43_netdown
+where n05_recsite is not null
+group by 1 order by 1;
+```
+
+```{r, echo=F}
+recSite %>%
+  bind_rows(
+    summarise_if(., is.numeric, sum, na.rm=T) %>% 
+    mutate(thlb_desc='Total')
+  ) %>% 
+  rename("Description"=thlb_desc, "Total"=total, "CFLB"=cflb) %>% 
+  kable() %>%
+    row_spec(nrow(recSite)+1, bold=T)
+```
+\
+
+```{r recSiteGraph, echo=F}
+recSite %>% 
+  mutate(
+    #create nonforest
+    nonfor = total - cflb,
+    #shorten long name
+    thlb_desc = replace(thlb_desc, thlb_desc=='Use, Recreation and Enjoyment of the Public Reserve', 'UREP')
+  ) %>%
+  #gather the cflb and nonfor areas into one column
+  gather(cflb, nonfor, key = 'landbase', value = 'area') %>%
+  #reorder the landbase for the graph
+  mutate(landbase = landbase %>% fct_relevel('nonfor', 'cflb')) %>%
+  #plot bar graph
+  ggplot(aes(thlb_desc, area, fill=landbase)) +
+  	geom_bar(stat="identity") +
+    #colour theme
+    scale_fill_manual(values = c("#555753", "#4e9a06"),
+    name = "",
+    labels = c("Non-Forest", "CFLB") ) +
+    #graph title and axis labels
+    ggtitle("Recreation Sites") +
+    xlab("Description") + 
+    ylab("Area Excluded (hectares)") +
+    gg_theme
+```
+\
+
+The same process used to calculate an aspatial reduction to the CFLB for road right-of-ways was used to reduce the THLB to account for the buffer than must be protected around trails.
+
+The recreastion trails were identified using the layer `WHSE_FOREST_TENURE.FTEN_RECREATION_LINES_SVW`. A 10 m buffer was applied to the line data. All the hectares that intersected with the trail buffers were selected and the buffers were erased from the `tsa43_skey`. The resulting layer `tsa43_untrailed` represents the area outside of the trail buffers. 
+
+The percent untrailed was calculated for each hectare and that factor was used to reduce the THLB. Since this is the only partial netdown applied to the THLB there was no description assigned.
+
+\
+```{sql trails, eval=T}  
+update tsa43_netdown set
+  p06_rectrail = pct_untrailed
+from tsa43_untrailed
+where tsa43_untrailed.gr_skey = tsa43_netdown.gr_skey;
+```
+\
+
+```{sql trailsNetdown, output.var="trails", echo=F}
+insert into tsa43_netdowntable (landclass, total, percent, excluded)
+	select 'Recreation Trails', sum(included*(1-p06_rectrail)), sum(included*(1-p06_rectrail))/17117.05, sum(thlb_net*(1-p06_rectrail))
+	from tsa43_netdown;	
+
+update tsa43_netdown set thlb_net = thlb_net*p06_rectrail;
+```
+
+```{sql trailsSummary, output.var="trails", echo=F}
+select round((1-p06_rectrail),1)::text pct_trailed, sum(included*(1-p06_rectrail)) total, sum(cflb_fact*(1-p06_rectrail)) cflb
+from tsa43_netdown
+where p06_rectrail < 1
+group by 1 order by 1;
+```
+
+```{r, echo=F}
+trails %>%
+  mutate(pct_trailed = replace(pct_trailed, pct_trailed=='0.0', '<0.05')) %>% 
+  bind_rows(
+    summarise_if(., is.numeric, sum, na.rm=T) %>% 
+    mutate(pct_trailed='Total')
+  ) %>% 
+  rename('Percent Trailed'=pct_trailed, "Total"=total, "CFLB"=cflb) %>% 
+  kable() %>%
+    row_spec(nrow(trails)+1, bold=T)
+```
+\
+
+```{r trailsGraph, echo=F}
+trails %>% 
+  mutate(nonfor = total - cflb) %>% 
+  #gather the cflb and nonfor areas into one column
+  gather(cflb, nonfor, key = 'landbase', value = 'area') %>%
+  #reorder the landbase for the graph
+  mutate(landbase = landbase %>% fct_relevel('nonfor', 'cflb')) %>%
+  #plot bar graph
+  ggplot(aes(pct_trailed, area, fill=landbase)) +
+  	geom_bar(stat="identity") +
+    #colour theme
+    scale_fill_manual(values = c("#555753", "#4e9a06"),
+    name = "",
+    labels = c("Non-Forest", "CFLB") ) +
+    #graph title and axis labels
+    ggtitle("Recreation Trails") +
+    xlab("Percent Trailed") + 
+    ylab("Area Excluded (hectares)") +
+    gg_theme
+```
+\
+
+## Inoperable Areas
+
+Inoperable areas were identified using slope. Originally, all slopes greater than 55 percent grade were excluded from the THLB. After review by District staff it was increased to 60 percent due to poor past performance and recent trend to increased harvest rates that are more likely to utilize the profile.
+
+\
+```{sql slope, eval=T}
+update tsa43_netdown set
+  n07_inoperable = 'Steep Slope'
+from tsa43_slope
+where 
+  tsa43_netdown.ogc_fid = tsa43_slope.ogc_fid and
+  slope > 60;
+```
+\
+
+During Data Package review, it was noted that a small amount of alpine and ESSF parkland was passing through the netdown as forested. These areas are not likely sufficiently forested to be harvestable and have no harvest history so they are removed at this step.
+
+\
+```{sql alpine, eval=T}
+update tsa43_netdown set
+  n07_inoperable = 'Alpine Parkland'
+where 
+  bgc_label in ('CMA un', 'ESSFunp');
+```
+\
+
+
+```{sql slopeNetdown, output.var="slope", echo=F}
+insert into tsa43_netdowntable (landclass, total, percent, excluded)
+	select 'Inoperable Areas', sum(included), sum(included)/17117.05, sum(thlb_net) 
+	from tsa43_netdown
+	where n07_inoperable is not null;	
+
+update tsa43_netdown set thlb_net = 0 where n07_inoperable is not null;
+```
+
+```{sql inopSummary, output.var="inoperable", echo=F}
+select  n07_inoperable thlb_desc, sum(included) total, sum(cflb_fact) cflb
+from tsa43_netdown
+where n07_inoperable is not null
+group by 1 order by 1;
+```
+
+```{r, echo=F}
+inoperable %>%
+  bind_rows(
+    summarise_if(., is.numeric, sum, na.rm=T) %>% 
+    mutate(thlb_desc='Total')
+  ) %>% 
+  rename("Description"=thlb_desc, "Total"=total, "CFLB"=cflb) %>% 
+  kable() %>%
+    row_spec(nrow(inoperable)+1, bold=T)
+```
+\
+
+```{sql slopeSummary, output.var="slope", echo=F}
+select 
+  round(slope/5.0)*5 slopecls,
+  case when n07_inoperable is not null then n07_inoperable else 'operable' end operability, 
+  sum(included - cflb_fact) nonfor, 
+  sum(cflb_fact) cflb
+from tsa43_netdown
+left join tsa43_slope on tsa43_netdown.ogc_fid = tsa43_slope.ogc_fid
+where slope <= 125
+group by 1,2 order by 1,2;
+```
+
+```{r slopeGraph, echo=F}
+slope %>%
+  
+  #gather the cflb and nonfor areas into one column
+  gather(cflb, nonfor, key = 'landbase', value = 'area') %>%
+  
+  #clean up the data
+  mutate(
+    #keep nonforest but split the cflb landbase by operability class
+    landbase = ifelse(landbase=='nonfor', landbase, operability), 
+    #reorder the landbase for the graph
+    landbase = landbase %>% fct_relevel('nonfor', 'Alpine Parkland', 'Steep Slope', 'operable')
+  ) %>%
+
+  #bar graph
+  ggplot(aes(slopecls, area, fill=landbase)) +
+  	geom_bar(stat='identity') +
+    
+    #colour theme
+    scale_fill_manual(values = c('#555753', '#3465a4', '#73d216', '#4e9a06'),
+    name = '',
+    labels = c('Non-Forest', 'Alpine Parkland', 'Steep Slope', 'Operable') ) +
+    
+    #graph title and axis labels
+    ggtitle('Area by Slope Class') +
+    xlab('Slope (Classes of 5 Percent)') + 
+    ylab('Area (hectares)') +
+    gg_theme
+```
+\
+
+## Upper Nass
+
+The Upper Nass was excluded since no major development has occurred or is planned to occur.
+
+\
+```{sql nass, eval=T}
+update tsa43_netdown set
+  n08_uppernass = 'Upper Nass'
+where 
+  zone_name = 'Upper Nass';
+```
+\
+
+```{sql nassNetdown, output.var="nass", echo=F}
+insert into tsa43_netdowntable (landclass, total, percent, excluded)
+	select 'Upper Nass', sum(included), sum(included)/17117.05, sum(thlb_net) 
+	from tsa43_netdown
+	where n08_uppernass is not null;	
+
+update tsa43_netdown set thlb_net = 0 where n08_uppernass is not null;
+```
+
+```{sql nassSummary, output.var="nass", echo=F}
+select  n08_uppernass thlb_desc, sum(included) total, sum(cflb_fact) cflb
+from tsa43_netdown
+where n08_uppernass is not null
+group by 1 order by 1;
+```
+
+```{r, echo=F}
+nass %>%
+  rename("Description"=thlb_desc, "Total"=total, "CFLB"=cflb) %>% 
+  kable()
+```
+\
+
+
+## Low Timber Growing Potential
+
+Stands that will never achieve the minimum harvest volume at any age will never contribute to timber supply. These stands will be excluded from the THLB. The minimum harvest age in the Data Package is 277 m3/ha.
+
+All stands with a yield curves were evaluated including some within the non-forest land base. 
+
+\
+```{sql lowsite}
+update tsa43_netdown set
+  n09_lowsite = 'Maximum Volume < 277' 
+from tsa43_vdyp_stats
+where 
+  maxvol < 277 and 
+  tsa43_netdown.feature_id = tsa43_vdyp_stats.feat_id;
+```
+\
+
+```{sql lowsiteNetdown, output.var="lowsite", echo=F}
+insert into tsa43_netdowntable (landclass, total, percent, excluded)
+	select 'Low Timber Growing Potential', sum(included), sum(included)/17117.05, sum(thlb_net) 
+	from tsa43_netdown
+	where n09_lowsite is not null;	
+
+update tsa43_netdown set thlb_net = 0 where n09_lowsite is not null;
+```
+
+```{sql lowsiteSummary, output.var="lowsite", echo=F}
+select  n09_lowsite thlb_desc, sum(included) total, sum(cflb_fact) cflb
+from tsa43_netdown
+where n09_lowsite is not null
+group by 1 order by 1;
+```
+
+```{r, echo=F}
+lowsite %>%
+  rename("Description"=thlb_desc, "Total"=total, "CFLB"=cflb) %>% 
+  kable()
+```
+\
+
+```{sql maxvolSummary, output.var="maxvol", echo=F}
+select  
+  round(maxvol/20)*20 volcls, 
+  case when maxvol < 277 then 'lowvol' else 'cflb' end lowvol, 
+  sum(included - cflb_fact) nonfor, 
+  sum(cflb_fact) cflb
+from tsa43_netdown
+left join tsa43_vdyp_stats on tsa43_netdown.feature_id = tsa43_vdyp_stats.feat_id
+where maxvol < 1000
+group by 1,2 order by 1,2;
+```
+
+\
+```{r maxvolGraph, echo=F}
+maxvol %>%
+  
+  #gather the cflb and nonfor areas into one column
+  gather(cflb, nonfor, key = 'landbase', value = 'Area') %>%
+  
+  #clean up the data
+  mutate(
+    #keep nonfor but split the cflb landbase into low volume
+    landbase = ifelse(landbase=='nonfor', landbase, lowvol),
+    #reorder the landbase for the graph
+    landbase = landbase %>% fct_relevel('nonfor', 'cflb', 'lowvol')
+  ) %>%
+  
+  #bar graph
+  ggplot(aes(volcls, Area, fill=landbase)) +
+  	geom_bar(stat='identity') +
+    
+    #colour theme
+    scale_fill_manual(values = c('#555753', '#4e9a06', '#73d216'),
+    name = '',
+    labels = c('Non-Forest', 'CFLB', 'Low Site') ) +
+    
+    #graph title and axis labels
+    ggtitle('Area by Maximum VDYP Volume') +
+    xlab('Maximum VDYP Volume (cubic metres per hectare)') + 
+    ylab('Area (hectares)') +
+    gg_theme
+```
+\
+
+The maximum volume is linked to the site index. Very little area in the TSA exceeds 20 metres site index. 
+
+\
+```{sql siSummary, output.var="si", echo=F}
+select  round(site_index) site_index, sum(included - cflb_fact) nonfor, sum(cflb_fact) cflb
+from tsa43_netdown
+where site_index <= 40
+group by 1 order by 1;
+```
+
+```{r siGraph, echo=F}
+si %>%
+  gather(cflb, nonfor, key = 'landbase', value = 'area') %>%
+  mutate(landbase = landbase %>% fct_relevel('nonfor', 'cflb'))  %>%
+  ggplot(aes(site_index, area, fill=landbase)) +
+  	geom_bar(stat='identity') +
+    
+    #colour theme
+    scale_fill_manual(values = c('#555753', '#4e9a06'),
+    name = '',
+    labels = c('Non-Forest', 'CFLB') ) +
+    
+    #graph title and axis labels
+    ggtitle('Area by Site Index') +
+    xlab('Site Index (metres)') + 
+    ylab('Area (hectares)') +
+    gg_theme
+```
+\
+
+## Problem Forest Types
+
+No reductions applied.
+
+\
+
+## Deciduous
+
+All deciduous-leading stands were excluded from the THLB.
+
+\
+```{sql deciduous, eval=T}
+update tsa43_netdown set
+  n10_decid = 'Deciduous'
+where 
+  spec_cd_1 in ('EP', 'AT', 'DR', 'ACT', 'E');
+```
+\
+
+```{sql decidNetdown, output.var="deciduous", echo=F}
+insert into tsa43_netdowntable (landclass, total, percent, excluded)
+	select 'Deciduous', sum(included), sum(included)/17117.05, sum(thlb_net) 
+	from tsa43_netdown
+	where n10_decid is not null;	
+
+update tsa43_netdown set thlb_net = 0 where n10_decid is not null;
+```
+
+```{sql decidSummary, output.var="deciduous", echo=F}
+select spec_cd_1 thlb_desc, sum(included) total, sum(cflb_fact) cflb
+from tsa43_netdown
+where n10_decid is not null
+group by 1 order by 1;
+```
+
+```{r, echo=F}
+deciduous %>%
+  bind_rows(
+    summarise_if(., is.numeric, sum, na.rm=T) %>% 
+    mutate(thlb_desc='Total')
+  ) %>% 
+  rename("Description"=thlb_desc, "Total"=total, "CFLB"=cflb) %>% 
+  kable() %>%
+    row_spec(nrow(deciduous)+1, bold=T)
+```
+\
+
+```{r deciduousGraph, echo=F}
+
+deciduous %>% 
+  mutate(nonfor = total - cflb) %>%
+  #gather the cflb and nonfor areas into one column
+  gather(cflb, nonfor, key = 'landbase', value = 'area') %>%
+  #reorder the landbase for the graph
+  mutate(
+    landbase = landbase %>% fct_relevel('nonfor', 'cflb'),
+    thlb_desc = thlb_desc %>% fct_reorder(-(area))
+  ) %>%
+  #plot bar graph
+  ggplot(aes(thlb_desc, area, fill=landbase)) +
+  	geom_bar(stat="identity") +
+    
+    #colour theme
+    scale_fill_manual(values = c("#555753", "#4e9a06"),
+    name = "",
+    labels = c("Non-Forest", "CFLB") ) +
+    
+    #graph title and axis labels
+    ggtitle("Deciduous Leading Stands") +
+    xlab("Description") + 
+    ylab("Area Excluded (hectares)") +
+    gg_theme
+```
+\
+
+## Old Growth Management Areas
+
+All OGMA were excluded from the THLB.
+
+\
+```{sql ogma, eval=T}
+update tsa43_netdown set
+  n11_ogma = 'OGMA'
+where 
+  ogma_provid is not null;
+```
+\
+
+```{sql ogmaNetdown, output.var="ogma", echo=F}
+insert into tsa43_netdowntable (landclass, total, percent, excluded)
+	select 'Old Growth Management Areas', sum(included), sum(included)/17117.05, sum(thlb_net) 
+	from tsa43_netdown
+	where n11_ogma is not null;	
+
+update tsa43_netdown set thlb_net = 0 where n11_ogma is not null;
+```
+
+```{sql ogmaSummary, output.var="ogma", echo=F}
+select  n11_ogma thlb_desc, sum(included) total, sum(cflb_fact) cflb
+from tsa43_netdown
+where n11_ogma is not null
+group by 1 order by 1;
+```
+
+```{r, echo=F}
+ogma %>%
+  rename("Description"=thlb_desc, "Total"=total, "CFLB"=cflb) %>% 
+  kable()
+```
+\
+
+
+## Ecosystem Network
+
+The ecosystem networks established by the SRMP were excluded from the THLB.
+
+The ecosystem network was buffered by 100 metres to create the layer `eco_net_buffer`. Within the buffer only 30% of the forest is accessible as THLB since 70% of the old-forest structure must be retained.
+
+\
+```{sql eco_network, eval=T}
+update tsa43_netdown set
+  n12_econet = 'Ecosystem Network',
+  p12_econet = 0
+where 
+  eco_network is not null;
+  
+update tsa43_netdown set
+  n12_econet = 'Ecosystem Network Buffer',
+  p12_econet = 0.3
+where 
+  eco_net_buffer is not null;
+```
+\
+
+```{sql econetNetdown, output.var="eco_network", echo=F}
+insert into tsa43_netdowntable (landclass, total, percent, excluded)
+	select 'Ecosystem Network', sum(included*(1-p12_econet)), sum(included*(1-p12_econet))/17117.05, sum(thlb_net*(1-p12_econet)) 
+	from tsa43_netdown;	
+
+update tsa43_netdown set thlb_net = thlb_net*p12_econet;
+```
+
+```{sql econetSummary, output.var="eco_network", echo=F}
+select  n12_econet thlb_desc, sum(included*(1-p12_econet)) total, sum(cflb_fact*(1-p12_econet)) cflb
+from tsa43_netdown
+where n12_econet is not null
+group by 1 order by 1;
+```
+
+```{r, echo=F}
+eco_network %>%
+  bind_rows(
+    summarise_if(., is.numeric, sum, na.rm=T) %>% 
+    mutate(thlb_desc='Total')
+  ) %>% 
+  rename("Description"=thlb_desc, "Total"=total, "CFLB"=cflb) %>% 
+  kable() %>%
+    row_spec(nrow(eco_network)+1, bold=T)
+```
+\
+
+## Stand Level Biodiversity - Wildlife Tree Retention
+
+This factor attempts to account for the area that has been excluded from within the cutblock boundaries in the consolidated cutblocks layer. The area can be assumed to never be logged and will contribute to stand-level biodiversity. It is uncertain if this area adds up to equal the 3.5% reserve reduction that will be applied to all future harvesting in the model. It is a fair representation of past practice and, most importantly, no longer contributes to managed stand yields.
+
+The RESULTS forest cover layer was found to be better than the reserve layer. Entire stands were misclassified as WTRA in the reserve layer. Only very recent harvesting contains mapping of WTP and WTRA in the RESULTS layer. The cutblocks layer has been refined to exclude area within the cutblock boundary that does not support crop trees. The area exclusions were studied and found to correspond with areas classied as non-productive (starting with NP) and non-commercial brush (various forms of NCBR) as well as WTP and WTRA.
+
+The RESULTS layer data never rarely exceeds the cutblock layer boundary so the cutblock layer was used as a mask. The few exceptions could be identified with codes outside the non-productive, non-commercial and WTRA categories. The RESULTS data therefore only shows through the area exclusions within the cutblock boundaries. The RESULTS layer only includes harvesting since 2005 so only reserves established since then will be accounted. 
+
+The future reserves are excluded from the THLB by the model at the time of first harvest.
+
+After the Data Package was released the Non-Commercial using lower-case 'Nc' was added.
+
+\
+```{sql wtra, eval=T}
+update tsa43_netdown
+  set n13_wtra = case
+    when substr(silv_polygon_no,1,2) = 'WT' then 'Wildlife Tree Reserve'
+    when substr(silv_polygon_no,1,2) = 'NP' then 'Non-Productive Reserve'
+    when substr(silv_polygon_no,1,2) in ('NC','Nc') then 'Non-Commercial Reserve'
+  end
+where 
+  harvest_year is null;
+```
+\
+
+```{sql wtraNetdown, output.var="wtra", echo=F}
+insert into tsa43_netdowntable (landclass, total, percent, excluded)
+	select 'Wildlife Tree Retention Areas', sum(included), sum(included)/17117.05, sum(thlb_net) 
+	from tsa43_netdown
+	where n13_wtra is not null;	
+
+update tsa43_netdown set thlb_net = 0 where n13_wtra is not null;
+```
+
+```{sql wtraSummary, output.var="wtra", echo=F}
+select n13_wtra thlb_desc, sum(included) total, sum(cflb_fact) cflb
+from tsa43_netdown
+where n13_wtra is not null
+group by 1 order by 1;
+```
+
+```{r, echo=F}
+wtra %>%
+  bind_rows(
+    summarise_if(., is.numeric, sum, na.rm=T) %>% 
+    mutate(thlb_desc='Total')
+  ) %>% 
+  rename("Description"=thlb_desc, "Total"=total, "CFLB"=cflb) %>% 
+  kable() %>%
+    row_spec(nrow(wtra)+1, bold=T)
+```
+\
+
+
+## Riparian Reserves and Management Areas
+
+The analysis had to resort to using the old aspatial reductions to account for riparian that were produced from a study conducted prior to the 2001 analysis. The TSA was divided into three zones of similar riparian patterns. Unfortunately this zone mapping was not available. The description in the text and the BEC zones listed were used to estimate zones based on grouped landscape units. The BEC mapping was also found to have changed since 2001. The value for the estimated closest BEC zone was applied to the new BEC zones.
+
+\
+```{sql ripClass, eval=T}
+update tsa43_netdown set 
+  n14_riparian = case
+    --Southeast Lower Nass
+    when lu_name in ('Sallysout','Madely','Brown Bear','Kinskuch','Tchitin','Kwinamuck','Nass River Kalum') then case
+      when bgc_label in ('BAFAun', 'CMA un', 'ESSFun', 'ESSFunp', 'ESSFwv', 'ESSFwvp', 'MH  mm 2', 'MH  mmp') 
+	      then 'Southest 2.8'
+      when bgc_label in ('CWH ws 2', 'ICH mc 1', 'ICH mc 1a', 'ICH mc 2', 'ICH vc') 
+	      then 'Southest 3.8'
+      when bgc_label in ('SBS mc 2') 
+	      then 'Southest 4.9'
+      end
+    --Southwest Lower Nass
+    when lu_name in ('White','Cambria Icefield','Bear','Tintina','Wildfire','Bowser') then case
+      when bgc_label in ('BAFAun', 'CMA un', 'ESSFun', 'ESSFunp', 'ESSFwvp', 'MH  mm 1', 'MH  mm 2', 'MH  mmp') 
+	      then 'Southwest 0.4'
+      when bgc_label in ('ICH mc 1') 
+        then 'Southwest 1.6'
+      when bgc_label in ('CWH wm', 'ICH vc') 
+	      then 'Southwest 2.4'
+      end
+    --Bell Irving
+    when lu_name in ('Oweegee','Craven','Muskaboo','Taylor - Damdochax') then case
+      when bgc_label in ('BAFAun', 'CMA un', 'ESSFun', 'ESSFunp', 'ESSFwv', 'ESSFwvp', 'MH  mm 2', 'MH  mmp') 
+	      then 'BellIrv 1.4'
+      when bgc_label in ('ICH mc 1', 'ICH vc') 
+	      then 'BellIrv 2.7'
+      when bgc_label in ('SBS mc 2', 'SBS un') 
+	      then 'BellIrv 4.9'
+      end
+  end;
+```
+
+```{sql ripReduction, eval=T}
+update tsa43_netdown set 
+  p14_riparian = case
+    when n14_riparian = 'Southest 2.8' then (1 - 0.028)
+    when n14_riparian = 'Southest 3.8' then (1 - 0.038)
+    when n14_riparian = 'Southest 4.9' then (1 - 0.049)
+    when n14_riparian = 'Southwest 0.4' then (1 - 0.004)
+    when n14_riparian = 'Southwest 1.6' then (1 - 0.016)
+    when n14_riparian = 'Southwest 2.4' then (1 - 0.024)
+    when n14_riparian = 'BellIrv 1.4' then (1 - 0.014)
+    when n14_riparian = 'BellIrv 2.7' then (1 - 0.027)
+    when n14_riparian = 'BellIrv 4.9' then (1 - 0.049)
+    else p14_riparian
+  end;
+```
+\
+
+### Kwinageese IRMP
+
+The Kwinageese River was identified using the freshwater atlas `WHSE_BASEMAPPING.FWA_RIVERS_POLY` and `WHSE_BASEMAPPING.FWA_STREAM_NETWORKS_SP`. A definition query identified GNIS name = "Kwinageese River" in both layers. Both layers were buffered by 150m on both sides and then unioned to produce the layer `kwinageese`. A `kwinageese` attribute populated with 'IRMP Buffer 150m' was created when the fid was added for rasterization. 
+
+\
+```{sql kwinageese, eval=T}
+update tsa43_netdown set
+  n14_riparian = 'Kwinageese River',
+  p14_riparian = 0
+where 
+  kwin_river is not null;
+```
+\
+
+
+```{sql ripNetdown, output.var="rip", echo=F}
+insert into tsa43_netdowntable (landclass, total, percent, excluded)
+	select 'Riparian Reserves and Management Areas', sum(included*(1-p14_riparian)), sum(included*(1-p14_riparian))/17117.05, sum(thlb_net*(1-p14_riparian))
+	from tsa43_netdown;	
+
+update tsa43_netdown set thlb_net = thlb_net*p14_riparian;
+```
+
+```{sql ripSummary, output.var="rip", echo=F}
+select n14_riparian thlb_desc, sum(included * (1-p14_riparian)) total, sum(cflb_fact * (1-p14_riparian)) cflb
+from tsa43_netdown
+where n14_riparian is not null
+group by 1 order by 1;
+```
+
+```{r, echo=F}
+rip %>%
+  bind_rows(
+    summarise_if(., is.numeric, sum, na.rm=T) %>% 
+    mutate(thlb_desc='Total')
+  ) %>% 
+  rename("Description"=thlb_desc, "Total"=total, "CFLB"=cflb) %>% 
+  kable() %>%
+    row_spec(nrow(rip)+1, bold=T)
+```
+\
+
+
+
+## Water Management Units
+
+All water management units, as defined in the SRMP, were excluded from the THLB.
+
+\
+```{sql wmu, eval=T}
+update tsa43_netdown set
+  n15_watershed = 'Water Management Unit'
+where 
+  water_mu is not null;
+```
+\
+
+```{sql wmuNetdown, echo=F}
+insert into tsa43_netdowntable (landclass, total, percent, excluded)
+	select 'Water Management Units', sum(included), sum(included)/17117.05, sum(thlb_net) 
+	from tsa43_netdown
+	where n15_watershed is not null;	
+
+update tsa43_netdown set thlb_net = 0 where n15_watershed is not null;
+```
+
+```{sql wmuSummary, output.var="wmu", echo=F}
+select  n15_watershed thlb_desc, water_mu unit, sum(included) total, sum(cflb_fact) cflb
+from tsa43_netdown
+where n15_watershed is not null
+group by 1,2 order by 1,2;
+```
+
+```{r, echo=F}
+wmu %>%
+  bind_rows(
+    summarise_if(., is.numeric, sum, na.rm=T) %>% 
+    mutate(thlb_desc='Total')
+  ) %>% 
+  rename("Description"=thlb_desc, "Total"=total, "CFLB"=cflb) %>% 
+  kable() %>%
+    row_spec(nrow(wmu)+1, bold=T)
+```
+\
+
+## Wildlife Habitat Areas
+
+The only entry under the `wha_harv_code` was 'NO HARVEST ZONE' so this area was excluded from the THLB.
+
+\
+```{sql wha, eval=T}
+update tsa43_netdown set
+  n16_wha = 'Grizzly Bear'
+where 
+  wha_harv_code is not null;
+```
+\
+
+```{sql whaNetdown, echo=F}
+insert into tsa43_netdowntable (landclass, total, percent, excluded)
+	select 'Wildlife Habitat Areas', sum(included), sum(included)/17117.05, sum(thlb_net) 
+	from tsa43_netdown
+	where n16_wha is not null;	
+
+update tsa43_netdown set thlb_net = 0 where n16_wha is not null;
+```
+
+```{sql whaSummary, output.var="wha", echo=F}
+select  n16_wha thlb_desc, sum(included) total, sum(cflb_fact) cflb
+from tsa43_netdown
+where n16_wha is not null
+group by 1 order by 1;
+```
+
+```{r, echo=F}
+wha %>%
+  rename("Description"=thlb_desc, "Total"=total, "CFLB"=cflb) %>% 
+  kable()
+```
+\
+
+## Special Habitats for General Wildlife
+
+The only entry under the `wha_harv_code` was 'NO HARVEST ZONE' so this area was excluded from the THLB.
+
+\
+```{sql genwild, eval=T}
+update tsa43_netdown set
+  n17_genwild = 'Special Habitats for General Wildlife'
+where 
+  gen_wildlife is not null;
+```
+\
+
+```{sql genwildNetdown, echo=F}
+insert into tsa43_netdowntable (landclass, total, percent, excluded)
+	select 'Special Habitats for General Wildlife', sum(included), sum(included)/17117.05, sum(thlb_net) 
+	from tsa43_netdown
+	where n17_genwild is not null;	
+
+update tsa43_netdown set thlb_net = 0 where n17_genwild is not null;
+```
+
+```{sql genwildSummary, output.var="genwild", echo=F}
+select  n17_genwild thlb_desc, sum(included) total, sum(cflb_fact) cflb
+from tsa43_netdown
+where n17_genwild is not null
+group by 1 order by 1;
+```
+
+```{r, echo=F}
+genwild %>%
+  rename("Description"=thlb_desc, "Total"=total, "CFLB"=cflb) %>% 
+  kable()
+```
+\
+
+## Archaeological Sites
+
+We no longer have anyone on staff with access to the sensitive data. I found this data in the SRMP working spatial data sets. It was labelled `nass_srmp_arch`.
+
+Owen has provided a more current data set that adds a few additional hectares that will be included in future revisions.
+
+\
+```{sql arch, eval=T}
+update tsa43_netdown set
+  n18_arch = 'Archaeological Site'
+where 
+  bordennumber is not null;
+```
+\
+
+```{sql archNetdown, echo=F}
+insert into tsa43_netdowntable (landclass, total, percent, excluded)
+	select 'Archaeological Sites', sum(included), sum(included)/17117.05, sum(thlb_net) 
+	from tsa43_netdown
+	where n18_arch is not null;	
+
+update tsa43_netdown set thlb_net = 0 where n18_arch is not null;
+```
+
+```{sql archSummary, output.var="arch", echo=F}
+select  n18_arch thlb_desc, sum(included) total, sum(cflb_fact) cflb
+from tsa43_netdown
+where n18_arch is not null
+group by 1 order by 1;
+```
+
+```{r, echo=F}
+arch %>%
+  rename("Description"=thlb_desc, "Total"=total, "CFLB"=cflb) %>% 
+  kable()
+```
+\
+
+## Permanent Sample Plots
+
+Plots are identified by sample_number
+
+\
+```{sql psp, eval=T}
+update tsa43_netdown set
+  n19_psp = 'Sample Plot'
+where 
+  sample_number is not null;
+```
+\
+
+```{sql pspNetdown, echo=F}
+insert into tsa43_netdowntable (landclass, total, percent, excluded)
+	select 'Permanent Sample Plots', sum(included), sum(included)/17117.05, sum(thlb_net) 
+	from tsa43_netdown
+	where n19_psp is not null;	
+
+update tsa43_netdown set thlb_net = 0 where n19_psp is not null;
+```
+
+```{sql pspSummary, output.var="psp", echo=F}
+select  n19_psp thlb_desc, sum(included) total, sum(cflb_fact) cflb
+from tsa43_netdown
+where n19_psp is not null
+group by 1 order by 1;
+```
+
+```{r, echo=F}
+psp %>%
+  rename("Description"=thlb_desc, "Total"=total, "CFLB"=cflb) %>% 
+  kable()
+```
+\
+
+## Ungulate Winter Range
+
+The spatial data for mountain goat (m-oram) (U-6-002) was all 'no harvest' and was excluded from the THLB.
+
+The GWM for moose (m-alal) (U-6-018) states that forage areas should be excluded from harvesting so it was deduced that areas classified as 'no harvest' were the forage areas. These were excluded from the THLB. The snow interception GWM will be modelled as a seral retention constraint.
+
+\
+```{sql uwr, eval=T}
+update tsa43_netdown set
+  n21_uwr = 'No Harvest'
+where 
+  uwr_noharvest is not null;
+```
+\
+
+```{sql uwrNetdown, echo=F}
+insert into tsa43_netdowntable (landclass, total, percent, excluded)
+	select 'Ungulate Winter Range', sum(included), sum(included)/17117.05, sum(thlb_net) 
+	from tsa43_netdown
+	where n21_uwr is not null;	
+
+update tsa43_netdown set thlb_net = 0 where n21_uwr is not null;
+```
+
+```{sql uwrSummary, output.var="uwr", echo=F}
+select  n21_uwr thlb_desc, sum(included) total, sum(cflb_fact) cflb
+from tsa43_netdown
+where n21_uwr is not null
+group by 1 order by 1;
+```
+
+```{r, echo=F}
+uwr %>%
+  rename("Description"=thlb_desc, "Total"=total, "CFLB"=cflb) %>% 
+  kable()
+```
+\
+
+## Pine Mushrooms
+
+Know mushroom area mapping does not exist so estimates were based on research. The ecosystems known to contain a high proportion of pine mushroom potential have partial THLB reductions applied.
+
+Both ICH mc 1 (203720 ha) and ICH mc 1a (21674 ha) were included since they were assumed to be variations of the same ecosystem.
+
+The area removed for pine mushrooms is quite substantial for a partial netdown. During Data Package review, the idea to use a random selection of reserved hectares was proposed. This approach better represents the area reserved and the reserves contribute to biodiversity and other retention objectives.
+
+The seed value is set (at the answer to the meaning of life) to ensure that the random selection doesn't change each time the netdown is run.
+
+\
+```{sql pinemushRandom} 
+select setseed(0.42);
+update tsa43_netdown set n22_pinemush = 'ICH 6.3% Reserve'
+where 
+  bgc_label in ('ICH mc 1', 'ICH mc 1a') and
+  random() < 0.063;
+  
+select setseed(0.42);
+update tsa43_netdown set n22_pinemush = 'CWH 3.0% Reserve'
+where 
+  bgc_label = 'CWH ws 2' and
+  random() < 0.03;
+```
+\
+
+```{sql pinemushNetdown, echo=F}
+insert into tsa43_netdowntable (landclass, total, percent, excluded)
+	select 'Pine Mushrooms', sum(included), sum(included)/17117.05, sum(thlb_net)
+	from tsa43_netdown
+	where n22_pinemush is not null;	
+
+update tsa43_netdown set thlb_net = 0 where n22_pinemush is not null;
+```
+
+```{sql pinemushSummary, output.var="pinemush", echo=F}
+select  n22_pinemush thlb_desc, sum(included) total, sum(cflb_fact) cflb
+from tsa43_netdown
+where n22_pinemush is not null
+group by 1 order by 1 desc;
+```
+
+```{r, echo=F}
+pinemush %>%
+  bind_rows(
+    summarise_if(., is.numeric, sum, na.rm=T) %>% 
+    mutate(thlb_desc='Total')
+  ) %>% 
+  rename("Description"=thlb_desc, "Total"=total, "CFLB"=cflb) %>% 
+  kable() %>%
+    row_spec(nrow(pinemush)+1, bold=T)
+```
+\
+
+
+
+\
+
+
+# Timber Harvesting Land Base
+
+The removals from the THLB are complete at this point. The final THLB is summarized below.
+
+The area of CFLB was calculated by multiplying the netdown factors. Complete removals were evaluated as a value of zero when a netdown label was present (the 'is null' boolean returns 'FALSE' and is then cast to the interger zero).
+
+\
+```{sql thlb, eval=T}
+update tsa43_netdown set thlb_fact = 
+  (n04_park is null)::int *
+  (n05_recsite is null)::int *
+  p06_rectrail *
+  (n07_inoperable is null)::int *
+  (n08_uppernass is null)::int *
+  (n09_lowsite is null)::int *
+  (n10_decid is null)::int *
+  (n11_ogma is null)::int *
+  p12_econet *
+  (n13_wtra is null)::int *
+  p14_riparian *
+  (n15_watershed is null)::int *
+  (n16_wha is null)::int *
+  (n17_genwild is null)::int *
+  (n18_arch is null)::int *
+  (n19_psp is null)::int *
+  (n20_cws is null)::int *
+  (n21_uwr is null)::int *
+  (n22_pinemush is null)::int;
+```
+\
+```{sql thlbNetdown, echo=F}
+insert into tsa43_netdowntable (landclass, total, percent, excluded)
+	select 'Timber harvesting land base', sum(thlb_net), sum(thlb_net)/17117.05, NULL 
+	from tsa43_netdown;
+```
+
+```{sql thlbSummary, output.var="thlb", echo=F}
+select 
+  included, sum(included) total, sum(cflb_fact) cflb, 
+  sum(cflb_fact*thlb_fact) thlb, sum(cflb_fact-(cflb_fact*thlb_fact)) nonthlb
+from tsa43_netdown
+group by 1 order by 1;
+```
+
+```{r, echo=F}
+thlb %>% 
+  # make table look pretty by replacing 1 with TSA name
+  mutate(included = 'Included') %>%
+  rename("Timber Harvesting Land Base"=included, "Total"=total, "CFLB"=cflb, "THLB"=thlb, "Non-THLB"=nonthlb) %>% 
+  kable()
+```
+\
+
+```{sql ageClass, output.var="ageClass", echo=F}
+select 
+  proj_age_1 age, 
+  sum(included-cflb_fact) nonforest, 
+  sum(cflb_fact-(cflb_fact*thlb_fact)) cflb, 
+  sum(cflb_fact*thlb_fact) thlb 
+from tsa43_netdown
+group by 1 order by 1;
+```
+
+
+```{r ageClassGraph, echo=F}
+ageClass %>%
+  #combine nonforest, cflb and thlb
+  gather(-age, key = 'landbase', value = 'area') %>%
+  mutate(
+    #put a cap of 500 on ages
+    age = replace(age, age > 500, 500),   
+    #assign classes from 0 to 500 in steps of 20
+    agecls = cut(age, seq(0, 500, 20)),
+    #set area in scale of thousands
+    area = area / 1000,
+    #reorder for the graph
+    landbase = landbase %>% fct_relevel('nonforest', 'cflb', 'thlb')
+    ) %>%
+  #remove areas with no age except where classified as thlb
+  filter( !(is.na(age) & landbase != 'thlb')) %>% 
+  #bar graph
+  ggplot(aes(agecls, area, fill=landbase)) +
+  	geom_bar(stat='identity') +
+    #colour theme
+    scale_fill_manual(values = c('#555753', '#73d216', '#4e9a06'),
+    name = '',
+    labels = c('Non-CFLB', 'CFLB', 'THLB') ) +
+    #graph title and axis labels
+    ggtitle('Nass TSA - Netdown Classification by Age Class') +
+    xlab('Age (years)') +
+    ylab('Area (1000 hectares)')  +
+    gg_theme
+```
+\
+
+## Netdown Table
+
+The final netdown summary table with sequential exclusion totals.
+
+\
+```{sql netdownTable, output.var="netTable", echo=F}
+select landclass, round(total), percent, round(excluded)
+from tsa43_netdowntable;
+```
+
+```{r, echo=F}
+knitr::kable(netTable, 
+  col.names = c("Netdown Factor", "Within gross land base (ha)", "Percent of gross (%)", "Unique area excluded from THLB (ha)"),
+  digits = c(0,0,1,0), format.args = list(big.mark = ",")
+) %>% kable_styling(bootstrap_options = "striped", full_width = TRUE) %>%
+      row_spec(c(1,5,24), bold=T)
+```
+\
+
+
+
+
+
+
+```{sql spatializeIt, echo=F, eval=F}
+drop table if exists tsa43_thlb;
+create table tsa43_thlb as select a.*, b.wkb_geometry from tsa43_netdown a join tsa43_skey b on a.gr_skey = b.gr_skey;
+```

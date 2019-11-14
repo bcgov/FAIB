@@ -1,0 +1,531 @@
+---
+title: "Nass TSA VDYP Tables"
+author: "G Nienaber"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    theme: simplex
+    highlight: tango
+    df_print: paged
+---
+
+[comment]: # Change the menu bar color and font size
+[comment]: # code.r is code block text and pre is for output of knitr chunks
+<style>
+  .list-group-item.active, .list-group-item.active:focus, .list-group-item.active:hover {background-color: #4e9a06;}
+  body, td {font-size: 14px;}
+  code.r {font-size: 14px;}
+  pre {font-size: 14px}
+</style>
+
+```{r setup, include=FALSE}
+
+#print code blocks
+knitr::opts_chunk$set(echo = TRUE)
+
+#Libraries
+library(readr)
+library(tidyr)
+library(dplyr)
+library(knitr)
+library(stringr)
+library(ggplot2)
+library(kableExtra)
+library(DBI)
+library(glue)
+
+#Postgres
+db = dbConnect(RPostgreSQL::PostgreSQL(), host="localhost", user = "postgres")
+knitr::opts_chunk$set(connection = "db")
+knitr::opts_knit$set(sql.max.print = NA)
+
+```
+
+# Load VDYP Data in to PostGRES
+
+Create a new table and read in CSV file from Wenli.
+
+```{sql createTable}
+drop table if exists tsa43_vdyp;
+
+create table tsa43_vdyp (
+  feat_id int,
+  age int,
+  vol numeric
+);
+
+copy tsa43_vdyp 
+  from 'C:/Data/tsa43/vdyp/DKM_NaturalStand_YT_V2.CSV'
+  csv header;
+```
+\
+```{r echo=FALSE}
+dbGetQuery(db,'select * from tsa43_vdyp limit 10;')
+```
+\
+
+There are a lot of low volume curves!  A few anomalies that surpass 1000 m^3^/ha. 
+
+```{r, echo=F}
+# query for all curve data
+curves <- dbGetQuery(db,'
+  select feat_id, age, vol from tsa43_vdyp;
+')
+# take a sample of unique feature id's to simplfy plot
+sample <- curves %>% group_by(feat_id) %>% summarise() %>% sample_frac(.01)
+
+curves %>% 
+  # filter out only feature id's in the sample
+  filter(mapply('%in%', feat_id, sample)) %>% 
+  # plot the curves
+  ggplot(aes(age, vol, group=feat_id)) + geom_line() + theme_minimal()
+```
+
+
+# Add Mean Annual Increment
+
+For use in calculating culmination MAI.
+
+```{sql}
+alter table tsa43_vdyp 
+  add column mai numeric default 0;
+
+update tsa43_vdyp 
+  set mai = vol / age
+  where vol > 0;
+```
+\
+```{r echo=FALSE}
+dbGetQuery(db,'select * from tsa43_vdyp order by 1 limit 10;')
+```
+\ 
+
+# Create a Table for Yield Curve Statistics
+
+A table with one row for each yield curve to contain all the curve-level statistics.
+
+```{sql createStats}
+drop table if exists tsa43_vdyp_stats;
+
+create table tsa43_vdyp_stats as (
+  select feat_id from tsa43_vdyp
+  group by 1 order by 1
+);
+
+alter table tsa43_vdyp_stats 
+  add column maxvol numeric default 0,
+  add column age_maxvol int default 0,
+  add column cmai numeric default 0,
+  add column age_cmai int default 0,
+  add column cmai95 numeric default 0,
+  add column u_mai_age int default 0,
+  add column u_mai numeric default 0,
+  add column l_mai numeric default 0,
+  add column age_cmai95 numeric default 0,
+  add column vri_age numeric default 0,
+  add column vri_vol numeric default 0,
+  add column u_vol numeric default 0,
+  add column l_vol numeric default 0,
+  add column p_low numeric default 0,
+  add column vdyp_vol numeric default 0;
+```
+\
+```{r echo=FALSE}
+dbGetQuery(db,'select * from tsa43_vdyp_stats order by 1 limit 10;')
+```
+\
+
+# Maximum Volume Achieved
+
+Sub-query identifies the maximum volume associated with each curve.
+
+```{sql maxVol}
+update tsa43_vdyp_stats set
+  maxvol = sub.maxvol
+from (
+    select feat_id, max(vol) maxvol from tsa43_vdyp group by 1
+  ) as sub
+where tsa43_vdyp_stats.feat_id = sub.feat_id;
+```
+\
+```{r echo=FALSE}
+dbGetQuery(db,'select * from tsa43_vdyp_stats order by 1 limit 10;')
+```
+\
+
+## Low Site Threshold
+
+The THLB netdown for Low Site uses a cutoff of 277 m^3^/ha.  Take a look at these curves.
+
+```{r, echo=F}
+curves <- dbGetQuery(db,'
+  select tsa43_vdyp.feat_id, age, vol, maxvol
+  from tsa43_vdyp
+  left join tsa43_vdyp_stats
+  on tsa43_vdyp.feat_id = tsa43_vdyp_stats.feat_id
+  where maxvol < 277
+  order by 1,2,3;
+')
+
+sample <- curves %>% group_by(feat_id) %>% summarise() %>% sample_frac(.01)
+
+curves %>% 
+  filter(mapply('%in%', feat_id, sample)) %>% 
+  ggplot(aes(age, vol, group=feat_id)) + geom_line() + theme_minimal()
+```
+\
+
+I'm not sure why I calculated the age at which the maximum volume is achieved. But here it is.
+
+```{sql age_maxVol}
+update tsa43_vdyp_stats set
+  age_maxvol = tsa43_vdyp.age
+from tsa43_vdyp
+where tsa43_vdyp_stats.feat_id = tsa43_vdyp.feat_id and
+  tsa43_vdyp_stats.maxvol = tsa43_vdyp.vol;
+```
+\
+```{r echo=FALSE}
+dbGetQuery(db,'select * from tsa43_vdyp_stats order by 1 limit 10;')
+```
+\
+
+# Culmination Mean Annual Increment
+
+Use a sub-query to find the maximum MAI for each curve.
+
+```{sql cmai}
+update tsa43_vdyp_stats set 
+  cmai = sub.cmai
+from (
+    select feat_id, max(mai) cmai from tsa43_vdyp group by 1
+  ) as sub
+where tsa43_vdyp_stats.feat_id = sub.feat_id;
+```
+\
+```{r echo=FALSE}
+dbGetQuery(db,'select * from tsa43_vdyp_stats order by 1 limit 10;')
+```
+\
+
+Identify the culmination age. The actual peak is going to occur at an even decade because we don't know the values between. An obvious statement but I wanted to remind myself.
+
+```{sql}
+update tsa43_vdyp_stats set
+  age_cmai = tsa43_vdyp.age
+from tsa43_vdyp
+where tsa43_vdyp_stats.feat_id = tsa43_vdyp.feat_id and
+  tsa43_vdyp_stats.cmai = tsa43_vdyp.mai;
+```
+\
+```{r echo=FALSE}
+dbGetQuery(db,'select * from tsa43_vdyp_stats order by 1 limit 10;')
+```
+\
+
+# 95% of Culmination MAI
+
+The age at which 95% of CMAI is achieved. This will be used to set minimum harvest ages.
+
+First calculate 95% of CMAI and then find the first age at which this value is exceeded which is recorded as the upper MAI age.
+
+```{sql}
+update tsa43_vdyp_stats set
+  cmai95 = cmai * 0.95;
+
+update tsa43_vdyp_stats set
+  u_mai_age = sub.age
+from (
+  select tsa43_vdyp.feat_id, min(age) age
+  from tsa43_vdyp, tsa43_vdyp_stats
+  where tsa43_vdyp_stats.feat_id = tsa43_vdyp.feat_id and
+  tsa43_vdyp.mai >= tsa43_vdyp_stats.cmai95
+  group by 1
+) as sub
+where tsa43_vdyp_stats.feat_id = sub.feat_id;
+```
+\
+```{r echo=FALSE}
+dbGetQuery(db,'select * from tsa43_vdyp_stats order by 1 limit 10;')
+```
+\
+
+Next, select the MAI at the upper age and lower age. Then figure out the percent of the difference between the upper MAI and CMAI relative to the decadal difference. Since this is a percentage it can be turned into years of a decade by multiplying by 10 and then rounding.
+
+```{sql}
+update tsa43_vdyp_stats set
+  u_mai = mai
+from tsa43_vdyp
+where tsa43_vdyp_stats.feat_id = tsa43_vdyp.feat_id and
+  tsa43_vdyp.age = u_mai_age;
+
+update tsa43_vdyp_stats set
+  l_mai = mai
+from tsa43_vdyp
+where tsa43_vdyp_stats.feat_id = tsa43_vdyp.feat_id and
+  tsa43_vdyp.age = u_mai_age-10;
+
+update tsa43_vdyp_stats set
+  age_cmai95 = u_mai_age - round((u_mai - cmai95) / (u_mai - l_mai) * 10)
+where l_mai > 0;
+```
+\
+```{r echo=FALSE}
+dbGetQuery(db,'select feat_id, cmai, age_cmai, cmai95, u_mai_age, u_mai, l_mai, age_cmai95 from tsa43_vdyp_stats order by 1 limit 20;')
+```
+\
+
+## Testing Spline Regression
+
+I went off on a tangent to evaluate the difference of using a smooth fitted spline regression through the decadal values.  It produced some wide variation at CMAI age.  However, the same principle of why we use CMAI95 eliminated the differences in CMAI95 age.
+
+Hitting the data base curve-by-curve and fitting a regression for every curve was slow. Don't recommend this approach.  Documented here for posterity since the for loop could be useful in the future.
+
+```{r echo=TRUE, eval=FALSE}
+# create a blank tibble to hold the results
+splineCmai <- tibble(feat_id=numeric(), age_cmai=numeric(), cmai=numeric(), age_cmai95=numeric(), cmai95=numeric() )
+
+# query a list of unique feature id's
+feat_ids <- dbGetQuery(db, 'select distinct feat_id from tsa43_vdyp order by 1 limit 20;')
+
+# loop through the list
+for(i in 1:nrow(feat_ids)) {
+  
+  # retrive the current feature id from the list
+  cur_id <- feat_ids[i,]
+  
+  # query the curve data for the current feature id
+  cur_curve <- dbGetQuery(db,glue('select feat_id, age, vol, mai from tsa43_vdyp where feat_id={cur_id};'))
+  
+  # run the spline regression
+  cur_spline <- as_tibble(spline(cur_curve$age,cur_curve$mai,n=241))
+  
+  # find maximum CMAI
+  cmai <- cur_spline %>% 
+    # filter out the maximum mai
+    filter(y == max(y)) %>% 
+    # change regression headers
+    rename(age_cmai=x, cmai=y) %>% 
+    # add a feature id column
+    mutate(feat_id = cur_id)
+ 
+  # find age at which 95% CMAI is achieved
+  cmai95 <- cur_spline %>%
+    rename(age=x, mai=y) %>%
+    # add CMAI95 value
+    mutate(cmai95 = cmai$cmai * 0.95) %>% 
+    # find all mai values greater than cmai
+    filter(mai >= cmai95) %>% 
+    # select the lowest age from this group
+    filter(age == min(age)) %>% 
+    select(age_cmai95 = age, cmai95)
+  
+  # combine CMAI and CMAI95 and add on to the results table
+  splineCmai <- bind_rows(splineCmai, bind_cols(cmai, cmai95))
+} 
+
+dbWriteTable(db, "tsa43_spline", splineCmai, overwrite=TRUE)
+
+dbGetQuery(db, '
+  select spl.feat_id, dec.cmai, spl.cmai, dec.age_cmai, spl.age_cmai, dec.cmai95, spl.cmai95, dec.age_cmai95, spl.age_cmai95, dec.age_cmai95-spl.age_cmai95 diff
+  from tsa43_spline spl
+  left join tsa43_vdyp_stats dec
+  on spl.feat_id = dec.feat_id;
+')
+
+## Notes for future
+# cur_spline <- smooth.spline(cur_curve$age,cur_curve$mai)
+# predict(cur_spline, age)
+
+```
+
+
+
+
+
+A large proportion of the THLB will be modelled on rotation ages between 120 years and 150 years.
+
+```{r cmaiGraph, echo=F}
+dbGetQuery(db,'
+  select age_cmai95, sum(thlb_fact) thlb_ha
+  from tsa43_vdyp_stats
+  left join tsa43_netdown
+  on tsa43_vdyp_stats.feat_id = tsa43_netdown.feature_id
+  where thlb_fact>0
+  group by 1 order by 1;
+') %>% 
+ggplot(aes(age_cmai95, thlb_ha)) +
+	geom_bar(stat="identity", fill="#336600") +
+  ggtitle("Age at which 95% of CMAI is Achieved") +
+  ylab("THLB (ha)") + 
+  xlab("Age (years)") +
+  theme_minimal()
+```
+\
+
+
+# Compare Yield Table Volume to VRI Volume
+
+Use the yield tables to calculate the current volume based on the current age. Requires interpolating between yield table entries.
+
+```{sql vdyp_vol}
+
+--import age and volume from VRI for pine at 12.5
+update tsa43_vdyp_stats set
+  vri_age = proj_age_1,
+  vri_vol = lvltot_125
+from tsa43_res
+where feat_id = feature_id and
+  substr(spec_cd_1,1,1)='P';
+
+--import age and volume from VRI for non-pine at 17.5  
+update tsa43_vdyp_stats set
+  vri_age = proj_age_1,
+  vri_vol = lvltot_175
+from tsa43_res
+where feat_id = feature_id and
+  substr(spec_cd_1,1,1)!='P';
+
+--set maximum age to be 250 for yield table lookup
+update tsa43_vdyp_stats set
+  vri_age = 250
+where vri_age > 250;
+
+--interpolate for ages between volume table entries
+--calculate the percentage of the lower volume contribution
+update tsa43_vdyp_stats set
+  p_low = (ceil(vri_age/10.0)*10 - vri_age) / 10;
+
+--import upper volume from the yield table
+update tsa43_vdyp_stats set
+  u_vol = vol
+from tsa43_vdyp
+where tsa43_vdyp_stats.feat_id = tsa43_vdyp.feat_id and
+  tsa43_vdyp.age = ceil(vri_age/10.0)*10;
+
+--import lower volume from the yield table  
+update tsa43_vdyp_stats set
+  l_vol = vol
+from tsa43_vdyp
+where tsa43_vdyp_stats.feat_id = tsa43_vdyp.feat_id and
+  tsa43_vdyp.age = floor(vri_age/10.0)*10;
+
+--calculate volume
+update tsa43_vdyp_stats set
+  vdyp_vol = (p_low * l_vol) + ((1-p_low) * u_vol);
+```
+\
+```{r echo=FALSE}
+dbGetQuery(db,'select * from tsa43_vdyp_stats order by 1 limit 10;')
+```
+\
+
+# Check for missing yield curves
+
+Make a left join between the resultant and the vdyp stats. 
+
+* The only VRI polygons with missing yield curves had no volume.
+* Only five had ages greater than 30
+
+```{sql}
+select feature_id, feat_id, proj_age_1, lvltot_125
+from tsa43_res
+left join tsa43_vdyp_stats
+on tsa43_res.feature_id = tsa43_vdyp_stats.feat_id
+where feat_id is null and
+  proj_age_1 > 30
+group by 1,2,3,4 order by 1,2,3,4;
+```
+
+Take a look at the opposite - see if there are any unecessary VDYP curves.
+
+* There are over 1056 cuves that aren't needed
+* 161 have no volume
+
+Probably the result of the rasterization process excluding very small polygons. These will be omitted when exporting the yield tables for SELES.
+
+```{sql}
+select feat_id, feature_id, maxvol, vri_age
+from tsa43_vdyp_stats
+left join tsa43_res
+on tsa43_res.feature_id = tsa43_vdyp_stats.feat_id
+where feature_id is null and maxvol > 0
+limit 10;
+```
+\
+
+# Check for unusual curves
+
+Take a look for unusual curves based on maximum volume.
+
+* Found 265 curves with all zero volume
+
+
+```{sql}
+select * from tsa43_vdyp_stats
+where maxvol = 0
+and vri_age > 30;
+```
+\
+
+Quality check for instances where vdyp_vol wasn't produced
+
+* Found only instances where the yield curve remained at zero late into the projection
+* No instances where the VRI volume didn't also show zero volume
+
+```{sql}
+select * from tsa43_vdyp_stats
+where vdyp_vol = 0 and maxvol > 0 and vri_age > 30 and vri_vol > 0
+limit 50;
+```
+\
+
+# Residual Difference between VDYP Volume and VRI Volume
+
+A residual graph gives an idea of how closely the modelled yields will match the VRI volumes.
+
+```{r, warning=F}
+dbGetQuery(db,'
+  select feature_id, vri_age, (vri_vol - vdyp_vol) residual, sum(thlb_fact) thlb_ha
+  from tsa43_vdyp_stats
+  left join tsa43_netdown
+  on tsa43_vdyp_stats.feat_id = tsa43_netdown.feature_id
+  where vri_vol is not null
+  group by 1,2,3 order by 1,2,3;
+') %>% 
+ggplot(aes(vri_age, residual)) + geom_point(shape=1, aes(size=thlb_ha))
+```
+
+The largest residuals are at 250 years which is likely the result of using yield tables that end at 250 years.  Volume in the VRI projection likely keep decreasing over time.
+
+```{sql}
+select *, (vri_vol - vdyp_vol) residual
+from tsa43_vdyp_stats
+where vri_vol is not null and (vri_vol - vdyp_vol) < -25 and vri_age > 50 and vri_age < 150;
+```
+\
+
+# Reformat Curves
+
+Here is a script to run that uses R alone to transpose the curves directly from the CSV file.  It takes the long table and makes it wide for use in SELES.  The output is tab separated format.
+
+Currently this code block is turned off using the `include` modifier. 
+
+```{r makeWide, include=F}
+
+#read in Comma Separated Volume
+yt <- read_csv(file='DKM_NaturalStand_YT_V2.CSV') 
+
+#rename the columns
+names(yt) <- c('feat_id', 'age', 'vol')
+
+
+#spread the data into wide format
+wide <- spread(yt, age, vol)
+
+#output for use in SELES in Tab Separated Volume
+write_tsv(wide, path='vdypTables.txt')
+```

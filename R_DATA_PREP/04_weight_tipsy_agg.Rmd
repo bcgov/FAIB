@@ -1,0 +1,342 @@
+---
+title: "Merge Tipsy Volumes"
+author: "D. Waddell and G. Nienaber"
+date: "October 21, 2019"
+output:
+  html_document:
+    theme: simplex
+    highlight: tango
+params:
+  tsa:
+    label: "TSA Number"
+    value: 43
+    choices: [12,13,16,43,48]
+  decid:
+    label: "Deciduous Inclusion"
+    value: 0
+    choices: [1,0]
+  planted:
+    label: "Planted Percent"
+    value : 50
+  data_directory:
+    label: "Base Data Directory"
+    value: "C:\Data\tsa43\tipsy"
+
+---
+
+Note that data files are assumed to be located in:  
+  C:/Data/projects/ResultsDelivery/tsaxx  
+
+Make sure that this folder exists and that this is where the data resides.  
+Othrwise, correct the folder location in the paramaters
+
+```{r setup ,eval=TRUE,echo=TRUE, warning=FALSE, message=FALSE}
+#load libraries
+library(tidyverse)
+library(kableExtra)
+
+#unpack parameters
+
+  # file location
+  inFolder <- str_c(params$data_directory,"/tsa",params$tsa,"/")
+  natFileName <- str_c(inFolder,"agg_nat_fid_out_tsa",params$tsa,".csv")
+  plantFileName <- str_c(inFolder,"agg_pl_fid_out_tsa",params$tsa,".csv")
+  finalFileName <- str_c(inFolder,"weighted_vols_tsa",params$tsa,".csv")
+
+  # deciduous inclusion factor
+  inc_decid <- as.numeric(params$decid)
+
+  # planted percent
+  pct_plant <- as.numeric(params$planted/100.0)
+  pct_nat <- as.numeric(1 - params$planted/100.0)
+```
+
+Read in the Natural Regeneration Yields Tables from: `r natFileName`
+
+```{r, warning=FALSE, message=FALSE}
+r_nat <- read_csv(natFileName) %>%
+  select(
+    'feature_id' = Identifier,
+    'ncvol010' = mvcon.10,
+    'ncvol020' = mvcon.20,
+    'ncvol030' = mvcon.30,
+    'ncvol040' = mvcon.40,
+    'ncvol050' = mvcon.50,
+    'ncvol060' = mvcon.60,
+    'ncvol070' = mvcon.70,
+    'ncvol080' = mvcon.80,
+    'ncvol090' = mvcon.90,
+    'ncvol100' = mvcon.100,
+    'ncvol110' = mvcon.110,
+    'ncvol120' = mvcon.120,
+    'ncvol130' = mvcon.130,
+    'ncvol140' = mvcon.140,
+    'ncvol150' = mvcon.150,
+    'ncvol160' = mvcon.160,
+    'ncvol170' = mvcon.170,
+    'ncvol180' = mvcon.180,
+    'ncvol190' = mvcon.190,
+    'ncvol200' = mvcon.200,
+    'ncvol210' = mvcon.210,
+    'ncvol220' = mvcon.220,
+    'ncvol230' = mvcon.230,
+    'ncvol240' = mvcon.240,
+    'ncvol250' = mvcon.250,
+    'ncvol260' = mvcon.260,
+    'ncvol270' = mvcon.270,
+    'ncvol280' = mvcon.280,
+    'ncvol290' = mvcon.290,
+    'ncvol300' = mvcon.300,
+    'ncvol310' = mvcon.310,
+    'ncvol320' = mvcon.320,
+    'ncvol330' = mvcon.330,
+    'ncvol340' = mvcon.340,
+    'ncvol350' = mvcon.350,
+    'ndvol010' = mvdec.10,
+    'ndvol020' = mvdec.20,
+    'ndvol030' = mvdec.30,
+    'ndvol040' = mvdec.40,
+    'ndvol050' = mvdec.50,
+    'ndvol060' = mvdec.60,
+    'ndvol070' = mvdec.70,
+    'ndvol080' = mvdec.80,
+    'ndvol090' = mvdec.90,
+    'ndvol100' = mvdec.100,
+    'ndvol110' = mvdec.110,
+    'ndvol120' = mvdec.120,
+    'ndvol130' = mvdec.130,
+    'ndvol140' = mvdec.140,
+    'ndvol150' = mvdec.150,
+    'ndvol160' = mvdec.160,
+    'ndvol170' = mvdec.170,
+    'ndvol180' = mvdec.180,
+    'ndvol190' = mvdec.190,
+    'ndvol200' = mvdec.200,
+    'ndvol210' = mvdec.210,
+    'ndvol220' = mvdec.220,
+    'ndvol230' = mvdec.230,
+    'ndvol240' = mvdec.240,
+    'ndvol250' = mvdec.250,
+    'ndvol260' = mvdec.260,
+    'ndvol270' = mvdec.270,
+    'ndvol280' = mvdec.280,
+    'ndvol290' = mvdec.290,
+    'ndvol300' = mvdec.300,
+    'ndvol310' = mvdec.310,
+    'ndvol320' = mvdec.320,
+    'ndvol330' = mvdec.330,
+    'ndvol340' = mvdec.340,
+    'ndvol350' = mvdec.350
+  )
+```
+
+Read in the Planted Regeneration Yields Tables from: `r plantFileName`
+
+```{r, warning=FALSE, message=FALSE}
+r_plant <- read_csv(plantFileName) %>%
+  select(
+    'feature_id' = Identifier,
+    'pcvol010' = mvcon.10,
+    'pcvol020' = mvcon.20,
+    'pcvol030' = mvcon.30,
+    'pcvol040' = mvcon.40,
+    'pcvol050' = mvcon.50,
+    'pcvol060' = mvcon.60,
+    'pcvol070' = mvcon.70,
+    'pcvol080' = mvcon.80,
+    'pcvol090' = mvcon.90,
+    'pcvol100' = mvcon.100,
+    'pcvol110' = mvcon.110,
+    'pcvol120' = mvcon.120,
+    'pcvol130' = mvcon.130,
+    'pcvol140' = mvcon.140,
+    'pcvol150' = mvcon.150,
+    'pcvol160' = mvcon.160,
+    'pcvol170' = mvcon.170,
+    'pcvol180' = mvcon.180,
+    'pcvol190' = mvcon.190,
+    'pcvol200' = mvcon.200,
+    'pcvol210' = mvcon.210,
+    'pcvol220' = mvcon.220,
+    'pcvol230' = mvcon.230,
+    'pcvol240' = mvcon.240,
+    'pcvol250' = mvcon.250,
+    'pcvol260' = mvcon.260,
+    'pcvol270' = mvcon.270,
+    'pcvol280' = mvcon.280,
+    'pcvol290' = mvcon.290,
+    'pcvol300' = mvcon.300,
+    'pcvol310' = mvcon.310,
+    'pcvol320' = mvcon.320,
+    'pcvol330' = mvcon.330,
+    'pcvol340' = mvcon.340,
+    'pcvol350' = mvcon.350,
+    'pdvol010' = mvdec.10,
+    'pdvol020' = mvdec.20,
+    'pdvol030' = mvdec.30,
+    'pdvol040' = mvdec.40,
+    'pdvol050' = mvdec.50,
+    'pdvol060' = mvdec.60,
+    'pdvol070' = mvdec.70,
+    'pdvol080' = mvdec.80,
+    'pdvol090' = mvdec.90,
+    'pdvol100' = mvdec.100,
+    'pdvol110' = mvdec.110,
+    'pdvol120' = mvdec.120,
+    'pdvol130' = mvdec.130,
+    'pdvol140' = mvdec.140,
+    'pdvol150' = mvdec.150,
+    'pdvol160' = mvdec.160,
+    'pdvol170' = mvdec.170,
+    'pdvol180' = mvdec.180,
+    'pdvol190' = mvdec.190,
+    'pdvol200' = mvdec.200,
+    'pdvol210' = mvdec.210,
+    'pdvol220' = mvdec.220,
+    'pdvol230' = mvdec.230,
+    'pdvol240' = mvdec.240,
+    'pdvol250' = mvdec.250,
+    'pdvol260' = mvdec.260,
+    'pdvol270' = mvdec.270,
+    'pdvol280' = mvdec.280,
+    'pdvol290' = mvdec.290,
+    'pdvol300' = mvdec.300,
+    'pdvol310' = mvdec.310,
+    'pdvol320' = mvdec.320,
+    'pdvol330' = mvdec.330,
+    'pdvol340' = mvdec.340,
+    'pdvol350' = mvdec.350
+  )
+```
+
+Note that there is always a natural fid but there will not always be a planted row.
+So a left join is used to include all planted fid and the natural fid where there is a match on feature_id.
+
+```{r}
+final_vol <-
+
+  #join the tables
+  left_join(r_nat, r_plant, by = "feature_id") %>%
+
+  #replace all NULL with 0
+  replace(is.na(.), 0) %>%
+
+  #calculate final vol
+  mutate(
+    vol010 = (ncvol010 + inc_decid * ndvol010) * pct_nat + (pcvol010 + inc_decid * pdvol010) * pct_plant,
+    vol020 = (ncvol020 + inc_decid * ndvol020) * pct_nat + (pcvol020 + inc_decid * pdvol020) * pct_plant,
+    vol030 = (ncvol030 + inc_decid * ndvol030) * pct_nat + (pcvol030 + inc_decid * pdvol030) * pct_plant,
+    vol040 = (ncvol040 + inc_decid * ndvol040) * pct_nat + (pcvol040 + inc_decid * pdvol040) * pct_plant,
+    vol050 = (ncvol050 + inc_decid * ndvol050) * pct_nat + (pcvol050 + inc_decid * pdvol050) * pct_plant,
+    vol060 = (ncvol060 + inc_decid * ndvol060) * pct_nat + (pcvol060 + inc_decid * pdvol060) * pct_plant,
+    vol070 = (ncvol070 + inc_decid * ndvol070) * pct_nat + (pcvol070 + inc_decid * pdvol070) * pct_plant,
+    vol080 = (ncvol080 + inc_decid * ndvol080) * pct_nat + (pcvol080 + inc_decid * pdvol080) * pct_plant,
+    vol090 = (ncvol090 + inc_decid * ndvol090) * pct_nat + (pcvol090 + inc_decid * pdvol090) * pct_plant,
+    vol100 = (ncvol100 + inc_decid * ndvol100) * pct_nat + (pcvol100 + inc_decid * pdvol100) * pct_plant,
+    vol110 = (ncvol110 + inc_decid * ndvol110) * pct_nat + (pcvol110 + inc_decid * pdvol110) * pct_plant,
+    vol120 = (ncvol120 + inc_decid * ndvol120) * pct_nat + (pcvol120 + inc_decid * pdvol120) * pct_plant,
+    vol130 = (ncvol130 + inc_decid * ndvol130) * pct_nat + (pcvol130 + inc_decid * pdvol130) * pct_plant,
+    vol140 = (ncvol140 + inc_decid * ndvol140) * pct_nat + (pcvol140 + inc_decid * pdvol140) * pct_plant,
+    vol150 = (ncvol150 + inc_decid * ndvol150) * pct_nat + (pcvol150 + inc_decid * pdvol150) * pct_plant,
+    vol160 = (ncvol160 + inc_decid * ndvol160) * pct_nat + (pcvol160 + inc_decid * pdvol160) * pct_plant,
+    vol170 = (ncvol170 + inc_decid * ndvol170) * pct_nat + (pcvol170 + inc_decid * pdvol170) * pct_plant,
+    vol180 = (ncvol180 + inc_decid * ndvol180) * pct_nat + (pcvol180 + inc_decid * pdvol180) * pct_plant,
+    vol190 = (ncvol190 + inc_decid * ndvol190) * pct_nat + (pcvol190 + inc_decid * pdvol190) * pct_plant,
+    vol200 = (ncvol200 + inc_decid * ndvol200) * pct_nat + (pcvol200 + inc_decid * pdvol200) * pct_plant,
+    vol210 = (ncvol210 + inc_decid * ndvol210) * pct_nat + (pcvol210 + inc_decid * pdvol210) * pct_plant,
+    vol220 = (ncvol220 + inc_decid * ndvol220) * pct_nat + (pcvol220 + inc_decid * pdvol220) * pct_plant,
+    vol230 = (ncvol230 + inc_decid * ndvol230) * pct_nat + (pcvol230 + inc_decid * pdvol230) * pct_plant,
+    vol240 = (ncvol240 + inc_decid * ndvol240) * pct_nat + (pcvol240 + inc_decid * pdvol240) * pct_plant,
+    vol250 = (ncvol250 + inc_decid * ndvol250) * pct_nat + (pcvol250 + inc_decid * pdvol250) * pct_plant,
+    vol260 = (ncvol260 + inc_decid * ndvol260) * pct_nat + (pcvol260 + inc_decid * pdvol260) * pct_plant,
+    vol270 = (ncvol270 + inc_decid * ndvol270) * pct_nat + (pcvol270 + inc_decid * pdvol270) * pct_plant,
+    vol280 = (ncvol280 + inc_decid * ndvol280) * pct_nat + (pcvol280 + inc_decid * pdvol280) * pct_plant,
+    vol290 = (ncvol290 + inc_decid * ndvol290) * pct_nat + (pcvol290 + inc_decid * pdvol290) * pct_plant,
+    vol300 = (ncvol300 + inc_decid * ndvol300) * pct_nat + (pcvol300 + inc_decid * pdvol300) * pct_plant,
+    vol310 = (ncvol310 + inc_decid * ndvol310) * pct_nat + (pcvol310 + inc_decid * pdvol310) * pct_plant,
+    vol320 = (ncvol320 + inc_decid * ndvol320) * pct_nat + (pcvol320 + inc_decid * pdvol320) * pct_plant,
+    vol330 = (ncvol330 + inc_decid * ndvol330) * pct_nat + (pcvol330 + inc_decid * pdvol330) * pct_plant,
+    vol340 = (ncvol340 + inc_decid * ndvol340) * pct_nat + (pcvol340 + inc_decid * pdvol340) * pct_plant,
+    vol350 = (ncvol350 + inc_decid * ndvol350) * pct_nat + (pcvol350 + inc_decid * pdvol350) * pct_plant
+  )  
+```
+
+Here you can run a quality assurance check on the merged volumes.
+Select feature_id from your data set that contain data for all four curve types.
+
+```{r}
+final_vol %>%
+  select(feature_id, ncvol150, ndvol150, pcvol150, pdvol150, vol150) %>%
+  filter(feature_id %in% c(5445216,5442685,5456216)) %>%
+  knitr::kable() %>% kable_styling(bootstrap_options = c("striped","bordered"), full_width = T)
+```
+
+Plot the example curves to review the merging. Again, substitue your own feature_id.
+
+```{r fig.width=10}
+final_vol %>% 
+  filter(feature_id %in% c(5445216,5442685,5456216)) %>%
+  gather(-feature_id, key = 'year', value = 'vol') %>%
+  mutate(
+    curve_type = str_sub(year,1,2),
+    year = as.numeric(str_sub(year, -3))
+  ) %>%
+  ggplot(aes(year, vol, group=curve_type)) +
+    geom_line(aes(color=curve_type)) +
+    scale_colour_manual(values = c('#4e9a06', '#8ae234', '#204a87', '#729fcf', '#cc0000')) +
+    facet_wrap(~feature_id)
+```
+
+
+The final merged curves are output to: `r finalFileName` in CSV format.
+Optionally, a tab delimited file can be output for use in SELES.
+
+```{r}
+final_vol %>%
+  select(
+    feature_id,
+    vol010,
+    vol020,
+    vol030,
+    vol040,
+    vol050,
+    vol060,
+    vol070,
+    vol080,
+    vol090,
+    vol100,
+    vol110,
+    vol120,
+    vol130,
+    vol140,
+    vol150,
+    vol160,
+    vol170,
+    vol180,
+    vol190,
+    vol200,
+    vol210,
+    vol220,
+    vol230,
+    vol240,
+    vol250,
+    vol260,
+    vol270,
+    vol280,
+    vol290,
+    vol300,
+    vol310,
+    vol320,
+    vol330,
+    vol340,
+    vol350
+  ) %>%
+
+  #write to comma separated file
+  write_csv(finalFileName)
+
+  #write to tab separated file (SELES)
+  #write_tsv(finalFileName)
+```
+
+Done.
