@@ -9,6 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+<<<<<<< HEAD
 ## Wildlife and Timber Supply Reviews
 Here I document a standard approach for developing wildlife-specific 'factors' in timber supply reviews (TSRs). I provide template R markdown files (.rmd's) that document text, and where possible, functioning code to create wildlife factors. These templates could be used to draft wildlife factors for TSR allowable annual cut (AAC) determinations.  
 
@@ -53,6 +54,29 @@ These include:
 - Moose
 - Grizzly bear
 - Fisher
+=======
+## Wildlife and Timber SUpply Review
+Here I document an approach for developing wildlife-related factors in timber supply reviews. I use R markdown files (.rmd's) to document and run code to create a factor .   
+
+
+in this folder are templates and draft factors for eahc TSR
+
+
+Here I document a standard approach to developing a moose (*Alces alces*) factor for timber supply review (TSR) analyses. The approach described here does not necesarily have to be applied to every timber supply review process. It is not intended to be strict and inflexible. Other approaches may be developed for a specific timber supply review if they are more appropriate. However, this document provides a standard basis as a guideline and starting point for developing a moose factor. Here I demonstrate the approach for the 2020 Okanagan TSR. 
+
+The approach proposed here includes six sections:
+1. Importance of Moose in the Timber Supply Area
+2. Key Relationships Between Moose and Forestry 
+3. Forestry-related Indicators of Moose Habitat and Populations
+4. Current State of Moose Habitat and Populations in the Timber Supply Area
+5. Moose Habitat and Population Management Tools
+6. Simulated Future States of Moose Habitat and Populations Under Different Management Scenarios in the Timber Supply Area 
+
+The intent of these sections are essentially to descibe why moose are important in a timber supply area (TSA), how moose relate to forestry, the current satus of moose in the TSA, management options ofr moose (relevant to forestry), and simualted future status of moose under alternate managment regimes.  
+
+
+## Species with Standard Factors
+>>>>>>> 5e6c0750c9dd5da8a0efc4dc9039cb9cf814456a
 
 ### Moose
 
