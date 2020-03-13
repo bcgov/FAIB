@@ -11,11 +11,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ## 1. Importance of Moose in the Timber Supply Area
-Moose (*Alces alces*)are a highly valued wildlfie species in British Columbia.  
+Moose are a highly valued wildlfie species in British Columbia.  
 
-In addition, any relevant management plans, policies, regulations or best practices that are being implemented or considered to address each wildlife issue will be summarized. 
 
-At a minimum this includes contacting regional government wildlife biologists, government foresters and First Nations  to discuss issues. 
+ 
+
 
 - FNs
 - hunting
@@ -26,7 +26,6 @@ At a minimum this includes contacting regional government wildlife biologists, g
 
 ## 2. Key Relationships Between Moose and Forestry   
 
-The relationship between each issue and forestry will also be summarized.
 
 
 ## 3. Forestry-related Indicators of Moose Habitat and Populations

@@ -1,0 +1,50 @@
+---
+title: "Grizzly bear factor"
+author: "Tyler Muhly"
+date: "13/03/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 1. Importance of Grizzly Bear in the Timber Supply Area
+
+
+
+
+•	Grizzly bear are a focal wildlife management species in Canada and British Columbia because of their social, cultural and conservation value.
+o	The Committee on the Status of Endangered Wildlife in Canada lists them as species of Special Concern because of increasing pressures of resource extraction and cumulative impacts in their range.
+o	They are blue listed (i.e., species of special concern because of characteristics that make them particularly sensitive to human activities or natural events) and have a S3 conservation status (i.e., rare and local, found only in a restricted range or susceptible to extirpation or extinction) in British Columbia.
+•	Grizzly bear viewing and hunting are important economic and social components of British Columbia’s tourism and recreation industries.
+
+
+## 2. Key Relationships Between Grizzly Bear and Forestry   
+
+
+
+
+## 3. Forestry-related Indicators of Grizzly Bear Habitat and Populations
+
+
+
+## 4. Current State of Grizzly Bear Habitat and Populations in the Timber Supply Area
+
+
+
+
+## 5. Grizzly Bear Habitat and Population Management Tools 
+
+
+
+
+
+
+## 6. Simulated Future States of Grizzly Bear Habitat and Populations Under Different Management Scenarios in the Timber Supply Area 
+
+
+
+
+
+

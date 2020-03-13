@@ -9,27 +9,50 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Wildlife and Timber SUpply Review
-Here I document an approach for developing wildlife-related factors in timber supply reviews. I use R markdown files (.rmd's) to document and run code to create a factor .   
+## Wildlife and Timber Supply Reviews
+Here I document a standard approach for developing wildlife-specific 'factors' in timber supply reviews (TSRs). I provide template R markdown files (.rmd's) that document text, and where possible, functioning code to create wildlife factors. These templates could be used to draft wildlife factors for TSR allowable annual cut (AAC) determinations.  
 
 
-in this folder are templates and draft factors for eahc TSR
 
 
-Here I document a standard approach to developing a moose (*Alces alces*) factor for timber supply review (TSR) analyses. The approach described here does not necesarily have to be applied to every timber supply review process. It is not intended to be strict and inflexible. Other approaches may be developed for a specific timber supply review if they are more appropriate. However, this document provides a standard basis as a guideline and starting point for developing a moose factor. Here I demonstrate the approach for the 2020 Okanagan TSR. 
+
+There is a need to effectively incorporate wildlife into timber supply reviews (TSRs) to determine effects of wildlife management on allowable annual cut (AAC). In addition, there is increasing need to account for the effects of land use decisions on natural resources, including wildlife. For example, to ensure that First Nation rights to harvest wildlife are not infringed on. 
+
+Recent court decisions have stated that decision makers must use credible information to consider the effects of land management decisions, including AAC determinations, on Indigenous peoples rights to harvest wildlife.
+- https://www.crownpub.bc.ca/Content/documents/williams_decision.pdf
+- http://www.courts.gov.bc.ca/jdb-txt/CA/11/02/2011BCCA0247.htm
+- http://www.courts.gov.bc.ca/jdb-txt/CA/13/00/2013BCCA0001.htm
+
+
+
+
+
+
+
+The approach described here does not necesarily have to be applied to every timber supply review process. It is not intended to be strict and inflexible. Other approaches may be developed for a specific timber supply review if they are more appropriate. However, this document provides a standard basis as a guideline and starting point for developing wildlife factors. 
 
 The approach proposed here includes six sections:
-1. Importance of Moose in the Timber Supply Area
-2. Key Relationships Between Moose and Forestry 
-3. Forestry-related Indicators of Moose Habitat and Populations
-4. Current State of Moose Habitat and Populations in the Timber Supply Area
-5. Moose Habitat and Population Management Tools
-6. Simulated Future States of Moose Habitat and Populations Under Different Management Scenarios in the Timber Supply Area 
+1. Importance of the Wildlife Species in the Timber Supply Area
+2. Key Relationships Between the Wildlife Species and Forestry 
+3. Forestry-related Indicators of the Wildlife Species' Habitat and Population Conditions
+4. Current State of the Wildlife Species' Habitat and Populations in the Timber Supply Area
+5. The Wildlife Species' Habitat and Population Management Tools
+6. Simulated Future States of the Wildlife Species Habitat and Populations Under Different Management Scenarios in the Timber Supply Area 
 
-The intent of these sections are essentially to descibe why moose are important in a timber supply area (TSA), how moose relate to forestry, the current satus of moose in the TSA, management options ofr moose (relevant to forestry), and simualted future status of moose under alternate managment regimes.  
+The intent of these sections are essentially to descibe why the wildife species of interest is important in a timber supply area (TSA), how that species relates to forestry, the current satus of the species in the TSA, management options for that species (relevant to forestry), and simualted future status of the species' state under alternate managment regimes.  
+
+## Standard Wildlife Species of Relevance to Timber Supply Reviews
+Wildlife species of conservation or management concern can vary across BC. However, there are some species that cover large spatial extents of BC and are generally highly valued across the province for conservation or socio-economic reasons. Here I provide templates for those species that are likely to be of high management or conservation priority across TSAs. 
+
+Another important consideration is the connection between the wildlife species and forestry. Obviously, TSR and TSR models are specific to forestry
 
 
-## Species with Standard Factors
+
+
+These include:
+- Moose
+- Grizzly bear
+- Fisher
 
 ### Moose
 
