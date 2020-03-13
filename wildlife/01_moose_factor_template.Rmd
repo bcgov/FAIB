@@ -1,0 +1,52 @@
+---
+title: "Moose Factor"
+author: "Tyler Muhly"
+date: "13/03/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## 1. Importance of Moose in the Timber Supply Area
+Moose are a highly valued wildlfie species in British Columbia.  
+
+
+ 
+
+
+- FNs
+- hunting
+
+
+
+
+
+## 2. Key Relationships Between Moose and Forestry   
+
+
+
+## 3. Forestry-related Indicators of Moose Habitat and Populations
+
+
+
+## 4. Current State of Moose Habitat and Populations in the Timber Supply Area
+
+
+
+
+## 5. Moose Habitat and Population Management Tools 
+
+
+
+## 6. Simulated Future States of Moose Habitat and Populations Under Different Management Scenarios in the Timber Supply Area 
+
+
+
+
+
+
+
+

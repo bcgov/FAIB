@@ -1,0 +1,36 @@
+---
+title: "wildlife Readme"
+author: "Tyler Muhly"
+date: "12/03/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Wildlife and Timber SUpply Review
+Here I document an approach for developing wildlife-related factors in timber supply reviews. I use R markdown files (.rmd's) to document and run code to create a factor .   
+
+
+in this folder are templates and draft factors for eahc TSR
+
+
+Here I document a standard approach to developing a moose (*Alces alces*) factor for timber supply review (TSR) analyses. The approach described here does not necesarily have to be applied to every timber supply review process. It is not intended to be strict and inflexible. Other approaches may be developed for a specific timber supply review if they are more appropriate. However, this document provides a standard basis as a guideline and starting point for developing a moose factor. Here I demonstrate the approach for the 2020 Okanagan TSR. 
+
+The approach proposed here includes six sections:
+1. Importance of Moose in the Timber Supply Area
+2. Key Relationships Between Moose and Forestry 
+3. Forestry-related Indicators of Moose Habitat and Populations
+4. Current State of Moose Habitat and Populations in the Timber Supply Area
+5. Moose Habitat and Population Management Tools
+6. Simulated Future States of Moose Habitat and Populations Under Different Management Scenarios in the Timber Supply Area 
+
+The intent of these sections are essentially to descibe why moose are important in a timber supply area (TSA), how moose relate to forestry, the current satus of moose in the TSA, management options ofr moose (relevant to forestry), and simualted future status of moose under alternate managment regimes.  
+
+
+## Species with Standard Factors
+
+### Moose
+
+In the last 100 years, moose have become an important, nutritious, staple food of many interior and coastal First Nations communities in British Columbia [First Nations Health Authority fact sheet](https://www.fnha.ca/Documents/Traditional_Food_Fact_Sheets.pdf). First Nations have taken leadership roles in moose managment, for example, partnering with the government of British COlumbia to develop co-management of moose in the Chilcotin region, where moose popualtion declines were of concern ( [Vancouver Sun 2018](https://vancouversun.com/news/local-news/b-c-government-and-first-nation-sign-deal-to-manage-declining-moose-populations/). Moose are also a culturally important species to many First Nations, for example, moose hide is a key symbol in a First Nations led campaign to end domestic violence in Canada ( [Moose Hide Campaign](https://moosehidecampaign.ca/home/about-us)).
