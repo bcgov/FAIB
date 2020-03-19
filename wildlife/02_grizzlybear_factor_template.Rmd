@@ -24,9 +24,33 @@ o	They are blue listed (i.e., species of special concern because of characterist
 
 
 
+•	Protection of grizzly bears’ food resources is a fine-scale strategy to increase the likelihood that populations will be sustained.
+o	For example, white-bark pine, salmon watercourses, berry fields, and riparian areas could be protected to secure food resources. 
+o	However, many food resources are not yet mapped, precluding assessment of the implications of conserving them for both grizzly bears and timber supply.
+•	Grizzly bear may be managed at large scales by limiting the amount of mid-seral forest and road development.
+o	Mid-seral forest (i.e., closed canopy, conifer-dominated forests aged approximately 40 to 100 years) is generally poor habitat for grizzly bear.
+o	Research has unequivocally shown that roads have a significant negative effect on grizzly bear survival through increased human-caused mortality (hunting and conflict kills) and displacement from good habitat caused by increased interactions with road users.
+	An estimated 56% of roads in British Columbia were created for forestry. 
+	Once a road is built, it is typically not removed from the landscape.
+	A road density less than 0.6 km/km2 is a recognized threshold of concern for grizzly bear populations in British Columbia.
+•	The effect of roads created by forestry development on wildlife such as grizzly bear is not addressed in the base case.
+•	There currently is no framework to manage grizzly bear mortality from road development at large scales.
+o	However, there are regulatory tools available to limit road access under the Land Act, Wildlife Act, Off-road Vehicle Act and Forest and Range Practices Act.
+
+
+
+
 
 ## 3. Forestry-related Indicators of Grizzly Bear Habitat and Populations
 
+o	Current grizzly bear status using the provincial grizzly bear current condition assessment and draft NatureServe based grizzly bear population unit ranking.
+
+
+Road density
+
+
+- statistical model of the relationship between current cutblock density and road density
+- Modeled grizzly bear survival as a function of simulated road density using an existing, published statistical model ( [Boulanger and Stenhouse 2014](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0115535)). 
 
 
 ## 4. Current State of Grizzly Bear Habitat and Populations in the Timber Supply Area
@@ -36,8 +60,14 @@ o	They are blue listed (i.e., species of special concern because of characterist
 
 ## 5. Grizzly Bear Habitat and Population Management Tools 
 
+•	Mid-seral forest and access management scenarios were developed to test how hypothetical management regimes could influence future timber supply and grizzly bear populations. 
+o	We identified priority landscape units (n = 33) for grizzly bear management.
+	Prioritized based on grizzly bear food quality and quantity (from plants or salmon).
 
-
+•	The mid-seral management scenario limited mid-seral forest to 30% in priority landscape units
+o	All road density was limited to 0.6 km/km2 in priority landscape units.
+o	Forestry road density was limited to 0.6 km/km2 in priority landscape units.
+o	Forestry road density was limited to 1.2 km/km2, with the assumption that half of current and future forestry roads were “removed” (i.e., made impassable to human access).
 
 
 

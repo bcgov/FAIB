@@ -11,19 +11,18 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ## 1. Importance of Moose in the Timber Supply Area
-<<<<<<< HEAD
 Moose (*Alces alces*)are a highly valued wildlfie species in British Columbia.  
 
 In addition, any relevant management plans, policies, regulations or best practices that are being implemented or considered to address each wildlife issue will be summarized. 
 
 At a minimum this includes contacting regional government wildlife biologists, government foresters and First Nations  to discuss issues. 
-=======
+
+
 Moose are a highly valued wildlfie species in British Columbia.  
 
-
+Moose are an important, nutritious, staple food of many interior and coastal First Nations communities in British Columbia [First Nations Health Authority fact sheet](https://www.fnha.ca/Documents/Traditional_Food_Fact_Sheets.pdf). Moose are also currently a culturally important species to many First Nations, for example, moose hide is a key symbol in a First Nations led campaign to end domestic violence in Canada ( [Moose Hide Campaign](https://moosehidecampaign.ca/home/about-us)). Annually, approximately 40,000 moose hunting licenses are sold, with typically over 250,000 days spent moose hunting [Kuzyk 2016](https://alcesjournal.org/index.php/alces/article/download/155/199).
  
 
->>>>>>> 5e6c0750c9dd5da8a0efc4dc9039cb9cf814456a
 
 - FNs
 - hunting
@@ -34,10 +33,7 @@ Moose are a highly valued wildlfie species in British Columbia.
 
 ## 2. Key Relationships Between Moose and Forestry   
 
-<<<<<<< HEAD
 The relationship between each issue and forestry will also be summarized.
-=======
->>>>>>> 5e6c0750c9dd5da8a0efc4dc9039cb9cf814456a
 
 
 ## 3. Forestry-related Indicators of Moose Habitat and Populations
