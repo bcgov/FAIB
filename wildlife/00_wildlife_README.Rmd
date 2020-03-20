@@ -43,22 +43,51 @@ Moose (*Alces alces*) are widely distributed across the majority of BC, and are 
 
 Prior to European colonization, moose wre used extensively for food, clothing and shelter ( [Moose In British Columbia](http://www.env.gov.bc.ca/wld/documents/moose.pdf)). In the last 100 years, moose have become an important, nutritious, staple food of many interior and coastal First Nations communities in British Columbia [First Nations Health Authority fact sheet](https://www.fnha.ca/Documents/Traditional_Food_Fact_Sheets.pdf). First Nations have taken leadership roles in moose managment, for example, partnering with the government of British COlumbia to develop co-management of moose in the Chilcotin region, where recently moose popualtion declines were of concern ( [Vancouver Sun 2018](https://vancouversun.com/news/local-news/b-c-government-and-first-nation-sign-deal-to-manage-declining-moose-populations/). Moose are also currently a culturally important species to many First Nations, for example, moose hide is a key symbol in a First Nations led campaign to end domestic violence in Canada ( [Moose Hide Campaign](https://moosehidecampaign.ca/home/about-us)).
 
-Moose are a key game species in BC, for sustenance and as a trophy species ( [Moose In British Columbia](http://www.env.gov.bc.ca/wld/documents/moose.pdf)). Annually, approximately 40,000 moose hunting licenses are sold, with typically over 250,000 days spent moose hunting [Kuzyk 2016](https://alcesjournal.org/index.php/alces/article/download/155/199). However, while these numbers are relatively stable, the number of succesfull hunts has been declining in the last 15 years, to approximately 6,000 licensed moose harvested annually across BC [Kuzyk 2016](https://alcesjournal.org/index.php/alces/article/download/155/199). Moose also have significant non-consumptuive value, as part of ecotourism and wildlife viewing ( [Moose In British Columbia](http://www.env.gov.bc.ca/wld/documents/moose.pdf)). 
+Moose are a key game species in BC, for sustenance and as a trophy species ( [Moose In British Columbia](http://www.env.gov.bc.ca/wld/documents/moose.pdf)). Annually, approximately 40,000 moose hunting licenses are sold in British Columbia, with typically over 250,000 days spent moose hunting [Kuzyk 2016](https://alcesjournal.org/index.php/alces/article/download/155/199). However, while these numbers are relatively stable, the number of succesfull hunts has been declining in the last 15 years, to approximately 6,000 licensed moose harvested annually across BC [Kuzyk 2016](https://alcesjournal.org/index.php/alces/article/download/155/199). Moose also have significant non-consumptuive value, as part of ecotourism and wildlife viewing ( [Moose In British Columbia](http://www.env.gov.bc.ca/wld/documents/moose.pdf)). 
 
-There is evidence of recent declining moose populations in many parts of BC. Moose were declining in 25% of game management zones (GMZs) from 1996 to 2005 and in 71% of GMZs from 2006-2015 ( [Kuzyk et al. 2018](http://alcesjournal.org/index.php/alces/article/download/240/274)). 
-
-
-These declines triggered 
+There is evidence of recent declining moose populations in many parts of BC. Moose popautlion declines of approximately 20-40% occurred appoximately in the Omineca and Cariboo regions of British Columbia from 2008 to 2014 ( [Kuzyk 2016](https://alcesjournal.org/alces/index.php/alces/article/download/155/199)). More specifically, moose were declining in 25% of game management zones (GMZs) in British COlumbia from 1996 to 2005 and in 71% of GMZs from 2006-2015 ( [Kuzyk et al. 2018](http://alcesjournal.org/index.php/alces/article/download/240/274)). 
 
 
+These declines triggered teh implemtnation of a large reaserch porrgam in cetnral BC to study causes of moose motrality ( [Kuzyl and Heard 2014](https://www2.gov.bc.ca/assets/gov/environment/plants-animals-and-ecosystems/wildlife-wildlife-habitat/wildlife-health/wildlife-health-documents/2014_bc_moose_research_design.pdf))
 
+
+
+
+
+https://www2.gov.bc.ca/assets/gov/environment/plants-animals-and-ecosystems/wildlife-wildlife-habitat/wildlife-health/wildlife-health-documents/2014_bc_moose_research_design.pdf
+
+
+
+#### Realtionship to Forestry
 
 
 Moose appear to have a key relationship to forestry practices. Forest harvesting obivously favours shrubs such as willow that are favoured forage of moose, however, moose also need adjacent forest cover as shelter from heat an dpredators ( [Moose In British Columbia](http://www.env.gov.bc.ca/wld/documents/moose.pdf)).  
 
 
 
+
+Moose in the central interior of British Columbia, south of Prince George, avoided roads, particularly in highly roaded areas, but appear to select for large areas with intermeidate levels of forest harvest ( [Schneideman 2018](http://web.unbc.ca/~michael/Pubs/Matt%20Scheideman%20Thesis%20Final%20for%20distribution.pdf)). However, at a finer scale, moose in general avoided older (16 to 40 year old) cutblocks, but repsonse to culbocks was ambigous across differetn areas adn seasons ( [Schneideman 2018](http://web.unbc.ca/~michael/Pubs/Matt%20Scheideman%20Thesis%20Final%20for%20distribution.pdf)). 
+
+
+At a fine scale (over a period of a day to a week), moose were more likely to be killed by hunters in areas with higher road densiites and new cutblocks( [Mumma and Gillingham 2019](http://web.unbc.ca/~michael/Mumma_and_Gillingham_2019.pdf)). 
+
+
+While cuytblokcs have gerenally been considered positive for moose, by removing forest canpoty that realeses shrub forage preferred by moose, soem recent evdinece suggest this may not always be the case. In central BC, reacerhrs foudn that at large scales (over a period of 180 days to a year), moose were more likely starve to death in areas with higher road and cutblock densites ( [Mumma and Gillingham 2019](http://web.unbc.ca/~michael/Mumma_and_Gillingham_2019.pdf)). Recent work south of Prince George has indicated that shrubs in open areas of large cutblocks may provide limteed protein value for moose, espeically comarped ot shrubs along cutblock edges and in adajcent forest ( [J. Werner, FLNRORD WIldlefi Biolgoist, pers. comm.](https://video.unbc.ca/media/The+abundance+of+scarcityA+landscape+change%2C+protein+limitation%2C+and+moose+population+dynamics+in+north-central+BC.+Dr.+kJeff+Werner%2C+BC+Ministry+of+Forests%2C+Lands%2C+Natural+Resource+Operations%2C+and+Rural+Development+-+October+18+2019/0_pbu2wpdw/19801)). 
+
+
+
+
+
 Roads facilitate human access into moose range, which could lead to over-harvesting of moose ( [Moose In British Columbia](http://www.env.gov.bc.ca/wld/documents/moose.pdf)).
+
+
+
+
+
+
+
+
+
 
 
 ### Grizzly Bear
