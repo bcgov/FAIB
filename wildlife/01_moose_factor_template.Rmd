@@ -11,70 +11,45 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ## 1. Importance of Moose in the Timber Supply Area
-Moose (*Alces alces*)are a highly valued wildlfie species in British Columbia.  
 
-In addition, any relevant management plans, policies, regulations or best practices that are being implemented or considered to address each wildlife issue will be summarized. 
-
-At a minimum this includes contacting regional government wildlife biologists, government foresters and First Nations  to discuss issues. 
-
-
-Moose are a highly valued wildlfie species in British Columbia.  
-
-Moose are an important, nutritious, staple food of many interior and coastal First Nations communities in British Columbia [First Nations Health Authority fact sheet](https://www.fnha.ca/Documents/Traditional_Food_Fact_Sheets.pdf). Moose are also currently a culturally important species to many First Nations, for example, moose hide is a key symbol in a First Nations led campaign to end domestic violence in Canada ( [Moose Hide Campaign](https://moosehidecampaign.ca/home/about-us)). Annually, approximately 40,000 moose hunting licenses are sold, with typically over 250,000 days spent moose hunting [Kuzyk 2016](https://alcesjournal.org/index.php/alces/article/download/155/199).
- 
-
-
-- FNs
-- hunting
-
-
-
-
+- provide some context on why moose are beign highlighted for this AAC determination 
+  - use some of the high-level information provided in the 00_widlife_README.rmd, but also provide local context, for example, provide information on huntign statistics, or habitat enhancement initieives to help quantify the improtance of moose in the TSA
+- in particular, and perhaps most important, if information is available, emphasize why moose are improtant to First Nations communities in the TSA
 
 ## 2. Key Relationships Between Moose and Forestry   
 
-
-Moose in the central interior of British Columbia, south of Prince George, avoided roads, particularly in highly roaded areas, but appear to select for large areas with intermeidate levels of forest harvest ( [Schneideman 2018](http://web.unbc.ca/~michael/Pubs/Matt%20Scheideman%20Thesis%20Final%20for%20distribution.pdf)). However, at a finer scale, moose in general avoided older (16 to 40 year old) cutblocks, but repsonse to culbocks was ambigous across differetn areas adn seasons ( [Schneideman 2018](http://web.unbc.ca/~michael/Pubs/Matt%20Scheideman%20Thesis%20Final%20for%20distribution.pdf)). 
-
-
-At a fine scale (over a period of a day to a week), moose were more likely to be killed by hunters in areas with higher road densiites and new cutblocks( [Mumma and Gillingham 2019](http://web.unbc.ca/~michael/Mumma_and_Gillingham_2019.pdf)). 
-
-
-While cuytblokcs have gerenally been considered positive for moose, by removing forest canpoty that realeses shrub forage preferred by moose, soem recent evdinece suggest this may not always be the case. At large scales (over a period of 180 days to a year), moose were found to more likely starve to death in areas with higher road and cutblock densites ( [Mumma and Gillingham 2019](http://web.unbc.ca/~michael/Mumma_and_Gillingham_2019.pdf)). Recent work south of Prince George has indicated that shrubs in open areas of large cutblocks may provide limteed protein value for moose, espeically comarped ot shrubs along cutblock edges and in adajcent forest ( [J. Werner, FLNRORD WIldlefi Biolgoist, pers. comm.](https://video.unbc.ca/media/The+abundance+of+scarcityA+landscape+change%2C+protein+limitation%2C+and+moose+population+dynamics+in+north-central+BC.+Dr.+kJeff+Werner%2C+BC+Ministry+of+Forests%2C+Lands%2C+Natural+Resource+Operations%2C+and+Rural+Development+-+October+18+2019/0_pbu2wpdw/19801)). 
-
-
-
-
-
-However, predation risk 
-
+- summarize some of the high-level information provided in the 00_widlife_README.rmd
+- where possible, add local context on moose-forestry realtionships, for example, results of reaserch on moose conudcted in or near the TSA
+- include a summary of any First Nations knowledge and data on moose, where available and permitted to do so
 
 ## 3. Forestry-related Indicators of Moose Habitat and Populations
 
-- road density indicator; thrsholds?
-- kill per unit effort (KPUE): can be an index of poplation density, particulalry where there is more road access [Kuzym et al. 2018](http://alcesjournal.org/index.php/alces/article/download/240/274)
-- forest age distribtuion?
-
-
-
-
-
+- identify and explain teh idnciators used in the analysis adn why they are improtant to moose management
+- 
 
 ## 4. Current State of Moose Habitat and Populations in the Timber Supply Area
 
-- indcators
-- pop
+
+- summarzie and visualize indicators on moose poplations, inclduing, for example:
+  - maps of current moose density or kills per unit effort (KPUE) at the wildlife management unit (WMU) scale
+  - trend in moose density or KPUE in the region where the TSA occurs
+  - maps of current raod density across the TSA at landscape unit (LU) or freshwater assessment watershed area (AWA) scales
+  - frequency or box plot showing distribtuion of road density across LU's or AWA's 
+  - maps of prportion of 5 to 30 year old forest stand across the TSA at LU or AWA scales 
+  - frequency or box plot showing distribtuion of 5 to 30 year old forest stands across LU's or AWA's
+  - maps of proportion of greater than 80 year old forest stand across the TSA at LU or AWA scales 
+- the above are suggestions; these can be modified or alternatives can be used based on local knowledge or needs
+- where available, use sumamries and visualtizatiosn of these indciators to show thresholds, limits or risk to moose habtiat and popualtions  
+- in addition, sumamrize and visualize any First Nations knowledge and data, where available and permitted to do so
+
 
 
 ## 5. Moose Habitat and Population Management Tools 
-- hunting
-- road recovery
+
 
 
 
 ## 6. Simulated Future States of Moose Habitat and Populations Under Different Management Scenarios in the Timber Supply Area 
-
-
 
 
 
