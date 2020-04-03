@@ -51,16 +51,24 @@ However, predation risk
 
 ## 3. Forestry-related Indicators of Moose Habitat and Populations
 
-- road density
-- kill per unit effort (KPUE): can be an index of poplation density, particulalry where there is more road access [Kuzym et al. 2018](http://alcesjournal.org/index.php/alces/article/download/240/274) 
+- road density indicator; thrsholds?
+- kill per unit effort (KPUE): can be an index of poplation density, particulalry where there is more road access [Kuzym et al. 2018](http://alcesjournal.org/index.php/alces/article/download/240/274)
+- forest age distribtuion?
+
+
+
+
 
 
 ## 4. Current State of Moose Habitat and Populations in the Timber Supply Area
 
-
+- indcators
+- pop
 
 
 ## 5. Moose Habitat and Population Management Tools 
+- hunting
+- road recovery
 
 
 
