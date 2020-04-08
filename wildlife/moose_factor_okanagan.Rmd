@@ -9,35 +9,94 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
 ## 1. Importance of Moose in the Timber Supply Area
-Moose are a highly valued wildlfie species in British Columbia.  
+Recent court decisions in British Columbia (BC) have stated that statutory decision makers must use credible information to consider the effects of land management decisions, including AAC determinations, on Indigenous peoples rights to harvest wildlife (e.g., see [William v. British Columbia 2012](https://www.bccourts.ca/jdb-txt/CA/12/02/2012BCCA0285.htm) and [West Moberly First Nations v. British 2011](https://www.bccourts.ca/jdb-txt/CA/11/02/2011BCCA0247.htm)). Accommodations to First Nations communities for impacts of forest harvest on wildlife may be necessary as part of some AAC decisions. 
 
+Several meetings (Dec. 15, 2016, January 30, 2017 and April 12. 2017) were held with the Secwepemc nations, including Adam's Lake Indian Band and Splatsin First Nations to discuss key wildlife values in the Okanagan TSA that could be considered as part of the TSR. The Secwepemc Nations have a signed reconcilitation agreement with the Province (April 2013) that promotes meaningful engagement between governments on stratgic topics, including forestry and wildlfei managment. 
 
- 
-
-
-- FNs
-- hunting
-
-
-
-
+Sustainability of moose popualtions was identfied by as a priority value by the Secwepemc Nations. In general, moose are a highly valued wildlife species in North America for a variety of cultural and economic reasons ( [Timmermann and Rogers 2005](https://pdfs.semanticscholar.org/55d2/86e83dd7cae6da270c153858b3d1a98d89de.pdf)). Prior to European colonization, moose were used extensively by Indigenous peoples for food, clothing and shelter ( [Moose In British Columbia](http://www.env.gov.bc.ca/wld/documents/moose.pdf)). In the last 100 years, moose have become an important, nutritious, staple food of many interior and coastal First Nations communities in BC ( [First Nations Health Authority fact sheet](https://www.fnha.ca/Documents/Traditional_Food_Fact_Sheets.pdf)). The Secwempemc nations developed a colalborative [Moose and Watershed stewarship pilot porgram](https://www2.gov.bc.ca/gov/content/industry/forestry/managing-our-forest-resources/sustainable-forest-management-practices/moose-watershed-stewardship-pilot) with the Thompson Rivers Natural Resource District to improve moose sustainability in the Okanagan TSA region. This plan outlines specific commitments made by BC Timber Sales (BCTS) and forest industry beyond lesgislative requirements to improve moose habtiats in the Okanagan TSA. 
 
 ## 2. Key Relationships Between Moose and Forestry   
+Research has shown that forestry activity influences moose density and distribution, both positively and negatively. Forestry cutblocks remove forest canopy, which generally increases the production of deciduous shrub browse on landscapes, which can positively influence moose. Shrub production in forestry cutblocks varies, but appears to peak anywhere from at 5 to 30 years after harvest, and moose appear to use these stand types the most. Cutblocks less than 5 years old and older than 30 years old (i.e., mid-seral stands), appear to generally be of less forage value to moose and thus receive less use as foraging habtiat. Older stands, including mature cutblocks, can benefit moose by providing valuable cover habitat. Closed canpoy conifer forest is important habitat for providing thermal cover in summer and to intercept snow in high snowfall years or areas. 
 
+Forest harvest, when done in moderation and in a way that creates a complex configuration of forest stands, can benefit moose. However, the creation of road infrastrucutre to extract timber appears to neutralize those benefits and in some cases negatively affects moose density and distribution overall. Forestry roads can make areas more accessible to moose hunters, increasing hunting mortality, which can limit moose population size. The overall effects of forestry on moose are likely neagtive when roads endure on the landscape and are not actively decommissioned or recovered. 
 
+Moose have an important and complex relationship with forestry development. Based on a review of previous research on the effects of forestry on moose, the relationship is most likely to be positive when:
+  - At the scale of a moose home range (i.e., approximately 10 km^2^), forest cutblocks are interspersed with large mature or old forest stands, and cut in a progressive way over a 5 to 10 year period so there is a distribution of cutblock ages 
+  - Silvicultural practices on harvested stands allow for growth of some shrubs, particularly along cutblock edges with mature stands   
+  - Roads are minimized, blocked, deactivated and restored
 
 ## 3. Forestry-related Indicators of Moose Habitat and Populations
+Within the context of the key moose-forestry relationships identified above, there are some potential indicators or constraints that could be implemented as part of TSA models, including: 
+  - the area of early, mid and later seral forest stands; for example, a dsitrbituion of 40% five to 30 year old cutbloks and 20% old forest with dense canpopy closure may be ideal targest for a landscape unit or watershed 
+  - road density, for example, a threshold within a landscape unit or watershed 
+  - cutblock replanting stocking targets, for example, implementation of low density conifer stocking (low stems/ha) in areas where moose forage production is a priority 
 
+The [Moose and Watershed Stewardship Pilot Project](https://www2.gov.bc.ca/assets/gov/farming-natural-resources-and-industry/forestry/stewardship/moose-and-watershed-stewardship-pilot/mwsp_final_plan_april_5_2016.pdf) outlines the following commitments to enhance moose habitat in defined areas (i.e., 'moose polygons') of the region:
+  - maintain 40% of moose polygons as thermal cover (conifer, ≥15m in height, and ≥5 ha in size) with a spatial distribution over a moose home range of 10km^2^
+  - maintain 40% of areas outside of moose polygons as thermal cover
+  - partial cutting in a 200m management zone surrounding key habitat elements for moose (wetlands and lakes ≥1 ha, wetland complexes)
+  - rehabilitation of permanent roads in proximity to key habitat elements, and temporary roads
+  - manage brush to respect forage values for moose
+  - create an access management plan
+While these commitments apply to a pilot study area, which included the Criss Creek, Jamieson Creek and Tranquille River watersheds, we can test how some of these commitments might influence timber supply across the Okanagan TSA. 
 
+Based on the above, we used the following indicators to assess current and future conditions of moose habitat in the Okanagan TSA:
+  - percentage of watershed area that is conifer forest stands ≥15m tall, with an ideal percentagte of 40% 
+  - percentage of watershed area that is 5 to 30 years old, with an ideal percentagte of 30%
+  - road density in a watershed area, with an ideal target of less than 0.6km/km^2^ 
 
 ## 4. Current State of Moose Habitat and Populations in the Timber Supply Area
+
+Data were downloaded from [DataBC](https://data.gov.bc.ca/) on April 7, 2020, and saved into a file geodatabase. Datat tha were downlaoded included the [digital road atlas (DRA)](https://catalogue.data.gov.bc.ca/dataset/digital-road-atlas-dra-master-partially-attributed-roads), [forest tenure (FTEN) roads](https://catalogue.data.gov.bc.ca/dataset/forest-tenure-road-segment-lines), [forest vegetation resources inventory (VRI)](https://catalogue.data.gov.bc.ca/dataset/vri-2019-forest-vegetation-composite-rank-1-layer-r1-), [TSA boundaries](https://catalogue.data.gov.bc.ca/dataset/fadm-timber-supply-area-tsa), [freshwater atlas assessment watershed areas (AWAs)](https://catalogue.data.gov.bc.ca/dataset/freshwater-atlas-assessment-watersheds), [landscape unit (LU) boundaries](https://catalogue.data.gov.bc.ca/dataset/landscape-units-of-british-columbia-current) and [wildlife management unit (WMU) boundaries](https://catalogue.data.gov.bc.ca/dataset/wildlife-management-units). The DRA, FTEN roads and VRI data were 'clipped' to the Okanagan TSA boundary. The linear DRA anf FTEN roads data were merged together and then converted to a 20 m resolution raster to remove duplicate roads in both datasets (i.e., roads less than 20 m apart). I then converted data back to lienar data using teh ArcScan extension, with teh follwoign settings: 
+
+Geometrical intersection 
+Max line width = 20 
+Noise level = 20 
+Compression tolerance = 0.025 
+Smoothing weight = 3 
+Hole size = 0 
+
+
+
+
+
+and then 'unioned' to 
+
+in ArcGIS 10.6. 
+
+
+
+
+
+
+```{r, load data, eval = F, echo = T, message = F, warning = F, include = F}
+
+cutblocks <- sf::st_read (dsn = "C:\\Work\\caribou\\clus_data\\moose\\moose_lch.gdb",
+                          layer = "cutblocks_20191217")
+cutblocks <- lwgeom::st_make_valid (cutblocks) # fix any geometry errors
+
+
+```
 
 
 
 
 ## 5. Moose Habitat and Population Management Tools 
+
+
+apply to where? moos epolygons plus hwat?
+
+
+
+
+
+moose polygons form Chris Procter.... access mamagment? threhold?
+
+
+
+
+
 
 
 

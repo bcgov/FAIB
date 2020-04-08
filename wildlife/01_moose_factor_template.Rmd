@@ -24,13 +24,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## 3. Forestry-related Indicators of Moose Habitat and Populations
 
-- identify and explain teh idnciators used in the analysis adn why they are improtant to moose management
-- 
+- identify and explain the indicators used in the analysis and why they are important to moose management
 
 ## 4. Current State of Moose Habitat and Populations in the Timber Supply Area
 
-
-- summarzie and visualize indicators on moose poplations, inclduing, for example:
+- summarize and visualize indicators on moose poplations, inclduing, for example:
   - maps of current moose density or kills per unit effort (KPUE) at the wildlife management unit (WMU) scale
   - trend in moose density or KPUE in the region where the TSA occurs
   - maps of current raod density across the TSA at landscape unit (LU) or freshwater assessment watershed area (AWA) scales
@@ -38,21 +36,27 @@ knitr::opts_chunk$set(echo = TRUE)
   - maps of prportion of 5 to 30 year old forest stand across the TSA at LU or AWA scales 
   - frequency or box plot showing distribtuion of 5 to 30 year old forest stands across LU's or AWA's
   - maps of proportion of greater than 80 year old forest stand across the TSA at LU or AWA scales 
+  - frequency or box plot showing distribtuion of greater than 80 year old forest stands across LU's or AWA's
 - the above are suggestions; these can be modified or alternatives can be used based on local knowledge or needs
 - where available, use sumamries and visualtizatiosn of these indciators to show thresholds, limits or risk to moose habtiat and popualtions  
 - in addition, sumamrize and visualize any First Nations knowledge and data, where available and permitted to do so
 
-
-
 ## 5. Moose Habitat and Population Management Tools 
 
-
-
+- describe any moose management tools that could be applied in the TSA (in addition to what has and is already being done)
+- where relevant, describe any moose management scenarios applied in the TSR model to compare to the base case 
+  - describe how the scenario(s) was applied in the TSR model (e.g., new constraints on timber harvest)
 
 ## 6. Simulated Future States of Moose Habitat and Populations Under Different Management Scenarios in the Timber Supply Area 
 
-
-
-
+- summarize and visualize simulated future indicators of moose habitat under base case and alternative moose management scenarios 
+  - maps of simulated future road density across the TSA at LU or AWA scales at 10 or 20 year intervals
+  - frequency or box plot showing distribtuion of simulated road density across LU's or AWA's at 10 or 20 year intervals
+  - maps of proportion of simulated future 5 to 30 year old forest stand across the TSA at LU or AWA scales at 10 or 20 year intervals
+  - frequency or box plot showing distribtuion of simulated future  5 to 30 year old forest stands across LU's or AWA's at 10 or 20 year intervals
+  - maps of proportion of greater than simulated future greater than 80 year old forest stand across the TSA at LU or AWA scales at 10 or 20 year intervals
+  
+- summarize and visualize simulated future AAC of moose management scearnios comapred to the base case
+  - figure showing timber harvest flow under base case and alterantive moose management scenario(s)
 
 
