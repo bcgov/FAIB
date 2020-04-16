@@ -7,6 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+require (sf)
 ```
 
 ## 1. Importance of Moose in the Timber Supply Area
@@ -42,40 +43,43 @@ The [Moose and Watershed Stewardship Pilot Project](https://www2.gov.bc.ca/asset
 While these commitments apply to a pilot study area, which included the Criss Creek, Jamieson Creek and Tranquille River watersheds, we can test how some of these commitments might influence timber supply across the Okanagan TSA. 
 
 Based on the above, we used the following indicators to assess current and future conditions of moose habitat in the Okanagan TSA:
-  - percentage of watershed area that is conifer forest stands ≥15m tall, with an ideal percentagte of 40% 
+  - percentage of watershed area that is conifer forest stands ≥15m tall, with an ideal percentage of 40% 
   - percentage of watershed area that is 5 to 30 years old, with an ideal percentagte of 30%
-  - road density in a watershed area, with an ideal target of less than 0.6km/km^2^ 
+  - road density in a watershed area, with an ideal target of less than 1km/km^2^ 
+
+Caveats with these indicators; baed on assumnptiosn fo what is 'good' habtait for moose, but recent reseearch is findign these not always necessary. E.g., forestry activity seems to reduce mortality on adults feamls by wolves, which may postively benefit those poatulatiosn overall, despite increased risk for moose in disturbed areas,
+
+
 
 ## 4. Current State of Moose Habitat and Populations in the Timber Supply Area
+Data were downloaded from [DataBC](https://data.gov.bc.ca/) on April 7, 2020, and saved into a file geodatabase. Data that were downlaoded included the [digital road atlas (DRA)](https://catalogue.data.gov.bc.ca/dataset/digital-road-atlas-dra-master-partially-attributed-roads), [forest tenure (FTEN) roads](https://catalogue.data.gov.bc.ca/dataset/forest-tenure-road-segment-lines), [forest vegetation resources inventory (VRI)](https://catalogue.data.gov.bc.ca/dataset/vri-2019-forest-vegetation-composite-rank-1-layer-r1-), [TSA boundaries](https://catalogue.data.gov.bc.ca/dataset/fadm-timber-supply-area-tsa), [freshwater atlas assessment watershed areas (AWAs)](https://catalogue.data.gov.bc.ca/dataset/freshwater-atlas-assessment-watersheds), [landscape unit (LU) boundaries](https://catalogue.data.gov.bc.ca/dataset/landscape-units-of-british-columbia-current) and [wildlife management unit (WMU) boundaries](https://catalogue.data.gov.bc.ca/dataset/wildlife-management-units). In addition, BC freshwater atlas data on [wetlands](https://catalogue.data.gov.bc.ca/dataset/freshwater-atlas-wetlands), [lakes](https://catalogue.data.gov.bc.ca/dataset/freshwater-atlas-lakes) and [rivers](https://catalogue.data.gov.bc.ca/dataset/freshwater-atlas-rivers) were downloaded to identify high-qaulity habtiat areas for moose.
 
-Data were downloaded from [DataBC](https://data.gov.bc.ca/) on April 7, 2020, and saved into a file geodatabase. Datat tha were downlaoded included the [digital road atlas (DRA)](https://catalogue.data.gov.bc.ca/dataset/digital-road-atlas-dra-master-partially-attributed-roads), [forest tenure (FTEN) roads](https://catalogue.data.gov.bc.ca/dataset/forest-tenure-road-segment-lines), [forest vegetation resources inventory (VRI)](https://catalogue.data.gov.bc.ca/dataset/vri-2019-forest-vegetation-composite-rank-1-layer-r1-), [TSA boundaries](https://catalogue.data.gov.bc.ca/dataset/fadm-timber-supply-area-tsa), [freshwater atlas assessment watershed areas (AWAs)](https://catalogue.data.gov.bc.ca/dataset/freshwater-atlas-assessment-watersheds), [landscape unit (LU) boundaries](https://catalogue.data.gov.bc.ca/dataset/landscape-units-of-british-columbia-current) and [wildlife management unit (WMU) boundaries](https://catalogue.data.gov.bc.ca/dataset/wildlife-management-units). The DRA, FTEN roads and VRI data were 'clipped' to the Okanagan TSA boundary. The linear DRA anf FTEN roads data were merged together and then converted to a 20 m resolution raster to remove duplicate roads in both datasets (i.e., roads less than 20 m apart). I then converted data back to lienar data using teh ArcScan extension, with teh follwoign settings: 
+The DRA, FTEN roads, freshwater atlas and VRI data were 'clipped' to the Okanagan TSA boundary. The linear DRA and FTEN roads data were merged together and then converted to a 20 m resolution raster to remove duplicate roads in both datasets (i.e., roads less than 20 m apart). I then converted data back to linear data using the ArcScan extension, with the following settings: 
+- Geometrical intersection 
+- Max line width = 20 
+- Noise level = 20 
+- Compression tolerance = 0.025 
+- Smoothing weight = 3 
+- Hole size = 0 
 
-Geometrical intersection 
-Max line width = 20 
-Noise level = 20 
-Compression tolerance = 0.025 
-Smoothing weight = 3 
-Hole size = 0 
+Roads data, freshwater atlas data and data on forest stand crown closure, species, projected age and projected height from VRI were Unioned to TSA, WMU, LU and AWA boundaries in ArcGIS 10.6.
 
-
-
-
-
-and then 'unioned' to 
-
-in ArcGIS 10.6. 
-
-
+### Road Density
+Current road desnity (km/km^2^) was estimated at a AWA scale (Fig. ).
 
 
 
 
 ```{r, load data, eval = F, echo = T, message = F, warning = F, include = F}
 
-cutblocks <- sf::st_read (dsn = "C:\\Work\\caribou\\clus_data\\moose\\moose_lch.gdb",
-                          layer = "cutblocks_20191217")
+st_layers (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb")
+
+cutblocks <- sf::st_read (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb",
+                          layer = " ")
 cutblocks <- lwgeom::st_make_valid (cutblocks) # fix any geometry errors
 
+
+C:\Work\tsr\data
 
 ```
 
