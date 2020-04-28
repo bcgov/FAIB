@@ -8,6 +8,11 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 require (sf)
+require (data.table)
+require (ggplot2)
+require (here)
+require (ggspatial)
+require (dplyr)
 ```
 
 ## 1. Importance of Moose in the Timber Supply Area
@@ -20,7 +25,7 @@ Sustainability of moose popualtions was identfied by as a priority value by the 
 ## 2. Key Relationships Between Moose and Forestry   
 Research has shown that forestry activity influences moose density and distribution, both positively and negatively. Forestry cutblocks remove forest canopy, which generally increases the production of deciduous shrub browse on landscapes, which can positively influence moose. Shrub production in forestry cutblocks varies, but appears to peak anywhere from at 5 to 30 years after harvest, and moose appear to use these stand types the most. Cutblocks less than 5 years old and older than 30 years old (i.e., mid-seral stands), appear to generally be of less forage value to moose and thus receive less use as foraging habtiat. Older stands, including mature cutblocks, can benefit moose by providing valuable cover habitat. Closed canpoy conifer forest is important habitat for providing thermal cover in summer and to intercept snow in high snowfall years or areas. 
 
-Forest harvest, when done in moderation and in a way that creates a complex configuration of forest stands, can benefit moose. However, the creation of road infrastrucutre to extract timber appears to neutralize those benefits and in some cases negatively affects moose density and distribution overall. Forestry roads can make areas more accessible to moose hunters, increasing hunting mortality, which can limit moose population size. The overall effects of forestry on moose are likely neagtive when roads endure on the landscape and are not actively decommissioned or recovered. 
+Forest harvest, when done in moderation and in a way that creates a complex configuration of forest stands, can benefit moose. However, the creation of road infrastrucutre to extract timber appears to neutralize those benefits and in some cases negatively affects moose density and distribution overall. Forestry roads can make areas more accessible to moose hunters, increasing hunting mortality, which can limit moose population size. The overall effects of forestry on moose are likely negative when roads endure on the landscape and are not actively decommissioned or recovered. 
 
 Moose have an important and complex relationship with forestry development. Based on a review of previous research on the effects of forestry on moose, the relationship is most likely to be positive when:
   - At the scale of a moose home range (i.e., approximately 10 km^2^), forest cutblocks are interspersed with large mature or old forest stands, and cut in a progressive way over a 5 to 10 year period so there is a distribution of cutblock ages 
@@ -44,7 +49,7 @@ While these commitments apply to a pilot study area, which included the Criss Cr
 
 Based on the above, we used the following indicators to assess current and future conditions of moose habitat in the Okanagan TSA:
   - percentage of watershed area that is conifer forest stands ≥15m tall, with an ideal percentage of 40% 
-  - percentage of watershed area that is 5 to 30 years old, with an ideal percentagte of 30%
+  - percentage of watershed area that is 5 to 30 years old, with an ideal percentage of 30%
   - road density in a watershed area, with an ideal target of less than 1km/km^2^ 
 
 Caveats with these indicators; baed on assumnptiosn fo what is 'good' habtait for moose, but recent reseearch is findign these not always necessary. E.g., forestry activity seems to reduce mortality on adults feamls by wolves, which may postively benefit those poatulatiosn overall, despite increased risk for moose in disturbed areas,
@@ -65,28 +70,181 @@ The DRA, FTEN roads, freshwater atlas and VRI data were 'clipped' to the Okanaga
 Roads data, freshwater atlas data and data on forest stand crown closure, species, projected age and projected height from VRI were Unioned to TSA, WMU, LU and AWA boundaries in ArcGIS 10.6.
 
 ### Road Density
-Current road desnity (km/km^2^) was estimated at a AWA scale (Fig. ).
+Current road density (km/km^2^) was estimated at a AWA scale (Fig. 1). Road density was relatively high (greater than 2 km/km^2^) across much of the TSA. Lower road densities, less than 1 km/km^2^ typically occurred in the northeast (Monashee mountains and towards Revelstoke), and southwest (EC Manning and Cathedral provincial parks) portions of the TSA. 
 
+```{r, calc current road density, eval = F, echo = F, message = F, warning = F, include = F}
+data.roads <- sf::st_read (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb",
+                           layer = "union_roads_final")
+data.roads <- as.data.frame (data.roads)
+data.road.length <- as.data.table (data.roads %>%
+                                    group_by (WATERSHED_FEATURE_ID) %>%
+                                    summarise (sum_length_km = sum (Length_km)))
+data.awa <- sf::st_read (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb",
+                         layer = "clip_fawa")
+data.awa.roads <- merge (data.awa, data.road.length, all = TRUE)
+data.awa.roads$road_density <- data.awa.roads$sum_length_km / (data.awa.roads$AREA_HA*0.01) # ha to km2
+st_write (data.awa.roads, 
+          dsn = here ("wildlife/data/okanagan/data_awa_roads.shp"))
+```
 
-
-
-```{r, load data, eval = F, echo = T, message = F, warning = F, include = F}
-
-st_layers (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb")
-
-cutblocks <- sf::st_read (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb",
-                          layer = " ")
-cutblocks <- lwgeom::st_make_valid (cutblocks) # fix any geometry errors
-
-
-C:\Work\tsr\data
+```{r, map current road density, fig.cap = "Figure 1. Map of current road density by freshwater assessment watershed area in the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
+data.awa.roads <- sf::st_read (dsn = here ("wildlife/data/okanagan/data_awa_roads.shp"),
+                               quiet = T)
+data.awa.roads$rd_dn [is.na (data.awa.roads$rd_dn)] <- 0
+data.awa.roads$brks_rd_dn <- cut (data.awa.roads$rd_dn, 
+                                  breaks = c (-0.1, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, Inf), 
+                                  labels = c ("0 - 0.19", "0.20 - 0.39", "0.40 - 0.59", "0.60 - 0.79",
+                                              "0.80 - 0.99", "1.00 - 1.19", "1.20 - 1.39", "1.40 - 1.59",
+                                              "1.60 - 1.79", "1.80 - 1.99", ">2.00"))
+theme_set (theme_bw ())
+ggplot (data = data.awa.roads) +
+        geom_sf (data = data.awa.roads, aes (fill = brks_rd_dn)) +
+        scale_fill_discrete () +
+        scale_fill_brewer (type = "div",
+                           palette = "RdBu",
+                           direction = -1,
+                           aesthetics = "fill",
+                           na.value = "orange") +
+        annotation_scale (location = "br", 
+                          width_hint = 0.5, 
+                          height = unit (0.1, "cm")) +
+        annotation_north_arrow (location = "tl", 
+                                which_north = "true", 
+                                style = north_arrow_fancy_orienteering,
+                                height = unit (1.25, "cm"),
+                                width = unit (1, "cm")) +
+        labs (fill = "Road Density (km/km2)") 
 
 ```
 
 
 
+### Forest Cover for Moose
+The AWA's with the highest proportion of conifer forest cover for moose (i.e., stands at least 5 ha in size and 15 m tall) occurred in the west-central portion of the TSA, west of Okanagan Lake, north of Shuswap Lake and north of Osoyoos (Fig. 2). There were a limited number of AWA's with little amounts of conifer forest cover along the western edge of the TSA. AWA's with an approximately 40% proportion of conifer forest cover occurred in the east-central and north-west portions of the TSA. 
+
+```{r, calc area of conifer stands >15m, eval = F, echo = F, message = F, warning = F, include = F}
+data.vri <- sf::st_read (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb",
+                         layer = "union_vri_lean")
+data.vri <- as.data.frame (data.vri)
+data.area.height <- as.data.table (data.vri %>%
+                                    filter (SPECIES_CD_1 == "B" | SPECIES_CD_1 == "BA" | SPECIES_CD_1 == "BB" |
+                                            SPECIES_CD_1 == "BG" | SPECIES_CD_1 == "BL" | SPECIES_CD_1 == "BN" |
+                                            SPECIES_CD_1 == "C" | SPECIES_CD_1 == "CW" | SPECIES_CD_1 == "F" | 
+                                            SPECIES_CD_1 == "FD" | SPECIES_CD_1 == "FDC" | SPECIES_CD_1 == "FDI" | 
+                                            SPECIES_CD_1 == "H" | SPECIES_CD_1 == "HM" | SPECIES_CD_1 == "HW" | 
+                                            SPECIES_CD_1 == "HX" | SPECIES_CD_1 == "HXM" | SPECIES_CD_1 == "P" | 
+                                            SPECIES_CD_1 == "PA" | SPECIES_CD_1 == "PF" | SPECIES_CD_1 == "PJ" | 
+                                            SPECIES_CD_1 == "PL" | SPECIES_CD_1 == "PLC" | SPECIES_CD_1 == "PLI" | 
+                                            SPECIES_CD_1 == "PR" | SPECIES_CD_1 == "PW" | SPECIES_CD_1 == "PX" | 
+                                            SPECIES_CD_1 == "PXJ" | SPECIES_CD_1 == "PY" | SPECIES_CD_1 == "S" | 
+                                            SPECIES_CD_1 == "SA" | SPECIES_CD_1 == "SB" | SPECIES_CD_1 == "SE" | 
+                                            SPECIES_CD_1 == "SS" | SPECIES_CD_1 == "SW" | SPECIES_CD_1 == "SX" | 
+                                            SPECIES_CD_1 == "SXB" | SPECIES_CD_1 == "SXE" | SPECIES_CD_1 == "SXL" | 
+                                            SPECIES_CD_1 == "SXS" | SPECIES_CD_1 == "SXW" | SPECIES_CD_1 == "SXX" | 
+                                           SPECIES_CD_1 == "YC") %>%
+                                    filter (PROJ_HEIGHT_1 >= 15) %>%
+                                    filter (AREA_HA >= 5) %>%
+                                    group_by (WATERSHED_FEATURE_ID) %>%
+                                    summarise (sum_area_ha = sum (AREA_HA)))
+data.awa <- sf::st_read (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb",
+                         layer = "clip_fawa")
+data.awa.height <- merge (data.awa, data.area.height, all = TRUE)
+data.awa.height$prop_moose_cover <- data.awa.height$sum_area_ha / data.awa.height$AREA_HA # proportion moose cover
+st_write (data.awa.height, 
+          dsn = here ("wildlife/data/okanagan/data_awa_cover.shp"))
+```
+
+```{r, map current forest cover, fig.cap = "Figure 2. Map of current conifer forest cover greater than 14 m tall and 5 ha patch size by freshwater assessment watershed area in the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
+data.awa.cover <- sf::st_read (dsn = here ("wildlife/data/okanagan/data_awa_cover.shp"),
+                               quiet = T)
+data.awa.cover$prp_ [is.na (data.awa.cover$prp_)] <- 0
+data.awa.cover$brks_prop_moose <- cut (data.awa.cover$prp_, 
+                                       breaks = c (-0.1, 0.2, 0.4, 0.6, 0.8, Inf), 
+                                       labels = c ("0 - 0.19", "0.20 - 0.39", "0.40 - 0.59", "0.60 - 0.79",
+                                                   "0.80 - 1.00"))
+ggplot (data = data.awa.cover) +
+        geom_sf (data = data.awa.cover, aes (fill = brks_prop_moose)) +
+        scale_fill_discrete () +
+        scale_fill_brewer (type = "div",
+                           palette = "RdBu",
+                           direction = -1,
+                           aesthetics = "fill",
+                           na.value = "orange") +
+        annotation_scale (location = "br", 
+                          width_hint = 0.5, 
+                          height = unit (0.1, "cm")) +
+        annotation_north_arrow (location = "tl", 
+                                which_north = "true", 
+                                style = north_arrow_fancy_orienteering,
+                                height = unit (1.25, "cm"),
+                                width = unit (1, "cm")) +
+        labs (fill = "Proportion of Conifer Cover 
+> 14m tall and 5 ha in Size") 
+```
+
+
+
+### Early Seral Forest for Moose
+
+
+
+
+
+```{r, calc area of cutblocks 5 to 30 yo, eval = F, echo = F, message = F, warning = F, include = F}
+data.cutblocks <- sf::st_read (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb",
+                               layer = "union_cutblocks")
+data.cutblocks <- as.data.frame (data.cutblocks)
+data.cut.5.30 <- as.data.table (data.cutblocks %>%
+                                    filter (HARVEST_YEAR >= 1988 & HARVEST_YEAR <= 2013) %>% # cutblocks 5 to 30 yo
+                                    group_by (WATERSHED_FEATURE_ID) %>%
+                                    summarise (sum_area_ha = sum (AREA_HA)))
+data.awa <- sf::st_read (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb",
+                         layer = "clip_fawa")
+data.awa.cut <- merge (data.awa, data.cut.5.30, all = TRUE)
+data.awa.cut$prop_moose_food <- data.awa.cut$sum_area_ha / data.awa.cut$AREA_HA # proportion moose forage (5 to 30 yo cut)
+st_write (data.awa.cut, 
+          dsn = here ("wildlife/data/okanagan/data_awa_food.shp"))
+```
+
+
+```{r, map cutblocks 5 to 30 yo, fig.cap = "Figure 3. Map of cutblocks 5 to 30 years old by freshwater assessment watershed area in the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
+data.awa.cut <- sf::st_read (dsn = here ("wildlife/data/okanagan/data_awa_food.shp"),
+                             quiet = T)
+data.awa.cut$prp__ [is.na (data.awa.cut$prp__)] <- 0
+data.awa.cut$brks_prop_moose <- cut (data.awa.cut$prp__, 
+                                     breaks = c (-0.1, 0.2, 0.4, 0.6, 0.8, Inf), 
+                                     labels = c ("0 - 0.19", "0.20 - 0.39", "0.40 - 0.59", "0.60 - 0.79",
+                                                 "0.80 - 1.00"))
+ggplot (data = data.awa.cut) +
+        geom_sf (data = data.awa.cut, aes (fill = brks_prop_moose)) +
+        scale_fill_discrete () +
+        scale_fill_brewer (type = "div",
+                           palette = "RdBu",
+                           direction = -1,
+                           aesthetics = "fill",
+                           na.value = "orange") +
+        annotation_scale (location = "br", 
+                          width_hint = 0.5, 
+                          height = unit (0.1, "cm")) +
+        annotation_north_arrow (location = "tl", 
+                                which_north = "true", 
+                                style = north_arrow_fancy_orienteering,
+                                height = unit (1.25, "cm"),
+                                width = unit (1, "cm")) +
+        labs (fill = "Proportion of 5 to 30 years old") 
+```
+
+
 
 ## 5. Moose Habitat and Population Management Tools 
+
+
+- Lillooet Forest District Moose Habitat Handbook recommends:
+  - 5 m adjacency
+  - 5 m height for secruity cover
+
+
+
 
 
 apply to where? moos epolygons plus hwat?
@@ -111,5 +269,23 @@ moose polygons form Chris Procter.... access mamagment? threhold?
 
 
 
+
+
+```{r, boxplot current road density, fig.cap = "Figure 2. Distribtuion of current road density by freshwater assessment watershed area in the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
+data.awa.roads <- sf::st_read (dsn = here ("wildlife/data/okanagan/data_awa_roads.shp"),
+                               quiet = T)
+data.awa.roads$rd_dn [is.na (data.awa.roads$rd_dn)] <- 0
+data.awa.roads$decade <- "2018"
+data.awa.roads <- as.data.frame (data.awa.roads)
+theme_set (theme_bw ())
+ggplot (data = data.awa.roads,
+        aes (x = decade, y = rd_dn)) +
+        geom_boxplot () + 
+        scale_y_continuous (name = "Road Density (km/km2)", 
+                            breaks = seq (0, 14, 2)) +
+        scale_x_discrete (name = "Decade") +
+        coord_flip ()
+
+```
 
 
