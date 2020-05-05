@@ -14,6 +14,7 @@ require (here)
 require (ggspatial)
 require (dplyr)
 require (tidyr)
+require (scales)
 ```
 
 ## 1. Importance of Moose in the Timber Supply Area
@@ -92,11 +93,27 @@ data.wmu <- sf::st_read (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb",
                          layer = "clip_wmu")
 data.wmu.moose <- merge (data.wmu, data.moose.pop, all = TRUE)
 data.wmu.moose <- data.wmu.moose [- c(74:77), ]
+data.wmu.moose.trend <- data.wmu.moose %>%
+                          filter (WILDLIFE_MGMT_UNIT_ID == "4-39" | WILDLIFE_MGMT_UNIT_ID == "8-1" | 
+                                  WILDLIFE_MGMT_UNIT_ID == "8-6" | WILDLIFE_MGMT_UNIT_ID == "8-8" | 
+                                  WILDLIFE_MGMT_UNIT_ID == "8-9" | WILDLIFE_MGMT_UNIT_ID == "8-10" | 
+                                  WILDLIFE_MGMT_UNIT_ID == "8-11" | WILDLIFE_MGMT_UNIT_ID == "8-12" | 
+                                  WILDLIFE_MGMT_UNIT_ID == "8-14" | WILDLIFE_MGMT_UNIT_ID == "8-21" | 
+                                  WILDLIFE_MGMT_UNIT_ID == "8-23" | WILDLIFE_MGMT_UNIT_ID == "8-24" | 
+                                  WILDLIFE_MGMT_UNIT_ID == "8-25") # these units have >1 record
+data.wmu.moose.trend$year <- as.numeric (data.wmu.moose.trend$year)
+
+ggplot (data = data.wmu.moose.trend,
+        aes (x = year, y = density)) +
+  geom_point () +
+  #geom_smooth () +
+  facet_grid (~ WILDLIFE_MGMT_UNIT_ID,
+              scales = "free") +
+  theme (axis.text.x = element_text (angle = 90)) +
+  scale_x_continuous (labels = scales::number_format (accuracy = 0))
 
 
-
-
-
+label = round (year, digits = 0)
 
 
 
