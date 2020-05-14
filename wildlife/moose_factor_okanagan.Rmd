@@ -72,12 +72,69 @@ The DRA, FTEN roads, freshwater atlas and VRI data were 'clipped' to the Okanaga
 Roads data, freshwater atlas data and data on forest stand crown closure, species, projected age and projected height from VRI were Unioned to TSA, WMU, LU and AWA boundaries in ArcGIS 10.6.
 
 
-### Moose population trends
-Searched SIWE for 'moose' in Okanagan and Thompson regions. found data form:
-- 1985 SRB survey WMU 3-12
-- In 2007, moose pop estimaetd in Okanagan at  2200, upper and lower CI's of1300-3100 ( [Gyug 2007](http://a100.gov.bc.ca/pub/siwe/details.do?projectId=4279&surveyId=10889&pagerOffset=0))
-- In 2013,  moose pop =  3913 moose ± 454 and in 2017, moose pop estimaetd in Okanagan at 4352 ± 272 ( [Walker et al. 2017](http://a100.gov.bc.ca/pub/siwe/details.do?projectId=4279&surveyId=36576&pagerOffset=0))
+### Moose Population Status and Trends
+Searched SIWE for 'moose' in Okanagan and Thompson regions. 
 
+The most recent moose density estimates were highest in the central portions of the TSA (Fig. xx). Moose densities ranged from 0.85 moose/km^2^ in WMU 8-11 to 0.22 moose/km^2^ in WMU 8-21. Most estimates were obtained from 2011 to 2019, with the exception of WMU 3-12 (0.26 moose/km^2^) and WMU 8.10 (0.27 moose/km^2^), which were obtained in 1985 adn 1999, respectively. 
+
+```{r, moose pop density map, fig.cap = "Figure xx. Most recent moose density estimates by wildlife management unit in the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
+data.moose.pop <- read.csv (file = here ("wildlife/data/okanagan/moose_density_20200504.csv"),
+                            header = T)
+data.wmu <- sf::st_read (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb",
+                         layer = "clip_wmu")
+data.tsa <- sf::st_read (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb",
+                         layer = "tsa_outer")
+
+data.wmu.moose <- merge (data.wmu, data.moose.pop, all = TRUE)
+data.wmu.moose.dns <- data.wmu.moose %>%
+                        filter (!is.na (density)) 
+data.wmu.moose.dns <- data.wmu.moose.dns [data.wmu.moose.dns$WILDLIFE_MGMT_UNIT_ID != "4-32" &
+                                          data.wmu.moose.dns$WILDLIFE_MGMT_UNIT_ID != "4-39" &
+                                          data.wmu.moose.dns$WILDLIFE_MGMT_UNIT_ID != "3-42" &
+                                          data.wmu.moose.dns$WILDLIFE_MGMT_UNIT_ID != "8-4" &
+                                          data.wmu.moose.dns$WILDLIFE_MGMT_UNIT_ID != "8-15" , ]
+data.wmu.moose.dns <- data.wmu.moose.dns [-c (5, 10, 12, 13, 17), ] # 10, 16, 18, 19, 24 
+data.wmu.moose.dns$brks_density <- cut (data.wmu.moose.dns$density, 
+                                        breaks = c (0, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 
+                                                    0.80, 0.90, 1.00, Inf), 
+                                        labels = c ("0 - 0.09", "0.10 - 0.19", "0.20 - 0.29", "0.30 - 0.39",
+                                                    "0.40 - 0.49", "0.50 - 0.59", "0.60 - 0.69", "0.70 - 0.79",
+                                                    "0.80 - 0.89", "0.90 - 1.00", ">1.00"))
+
+data.wmu.moose.dns <- cbind (data.wmu.moose.dns, st_coordinates (st_centroid (data.wmu.moose.dns)))
+
+ggplot (data = data.wmu.moose.dns) +
+        geom_sf (data = data.wmu.moose.dns, aes (fill = brks_density)) +
+        geom_sf (data = data.tsa, fill = NA) +
+        scale_fill_discrete () +
+        scale_fill_brewer (type = "div",
+                           palette = "RdBu",
+                           direction = -1,
+                           aesthetics = "fill",
+                           na.value = "orange") +
+        annotation_scale (location = "br", 
+                          width_hint = 0.5, 
+                          height = unit (0.1, "cm")) +
+        annotation_north_arrow (location = "tl", 
+                                which_north = "true", 
+                                style = north_arrow_fancy_orienteering,
+                                height = unit (1.25, "cm"),
+                                width = unit (1, "cm")) +
+        labs (fill = "Density (moose/km2)") +
+        geom_label(data = data.wmu.moose.dns, 
+                   aes(X, Y, label = density), 
+                   size = 2.5) +
+        theme (axis.title.x = element_blank(),
+               axis.title.y = element_blank())
+
+```
+
+
+
+
+
+
+bull/cow ratios
 
 
 - ideal bull ratio threshold > 30/100 cows ( [Walker et al. 2017](http://a100.gov.bc.ca/pub/siwe/details.do?projectId=4279&surveyId=36576&pagerOffset=0))
@@ -85,8 +142,65 @@ Searched SIWE for 'moose' in Okanagan and Thompson regions. found data form:
 
 
 
+```{r, moose bull/cow ratio, fig.cap = "Figure xx. Most recent moose bull/cow ratios by wildlife management unit in the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
+data.moose.pop <- read.csv (file = here ("wildlife/data/okanagan/moose_density_20200504.csv"),
+                            header = T)
+data.wmu <- sf::st_read (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb",
+                         layer = "clip_wmu")
+data.tsa <- sf::st_read (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb",
+                         layer = "tsa_outer")
+data.wmu.moose <- merge (data.wmu, data.moose.pop, all = TRUE)
+data.wmu.moose.bc <- data.wmu.moose %>%
+                        filter (!is.na (bulls_100cows))
 
-```{r, moose pop density, fig.cap = "Figure 1. Trends moose density in the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
+data.wmu.moose.bc <- data.wmu.moose.bc [data.wmu.moose.dns$WILDLIFE_MGMT_UNIT_ID != "4-32" &
+                                        data.wmu.moose.dns$WILDLIFE_MGMT_UNIT_ID != "4-39" &
+                                        data.wmu.moose.dns$WILDLIFE_MGMT_UNIT_ID != "3-42" &
+                                        data.wmu.moose.dns$WILDLIFE_MGMT_UNIT_ID != "8-4" &
+                                        data.wmu.moose.dns$WILDLIFE_MGMT_UNIT_ID != "8-15" , ]
+data.wmu.moose.bc.2 <- data.wmu.moose.bc [c (1, 2, 8, 11, 19, 21, 24, 25, 27, 31, 32, 34, 36, 38, 44, 48), ] 
+
+data.wmu.moose.bc.2$brks_bc <- cut (data.wmu.moose.bc.2$bulls_100cows, 
+                                        breaks = c (0, 15, 30, 45, 60, 75, 90, Inf), 
+                                        labels = c ("0 - 14", "15 - 29", "30 - 44", "45 - 59",
+                                                    "60 - 74", "75 - 89", ">90"))
+data.wmu.moose.bc.2 <- cbind (data.wmu.moose.bc.2, st_coordinates (st_centroid (data.wmu.moose.bc.2)))
+
+ggplot (data = data.wmu.moose.bc.2) +
+        geom_sf (data = data.wmu.moose.bc.2, aes (fill = brks_bc)) +
+        geom_sf (data = data.tsa, fill = NA) +
+        scale_fill_discrete () +
+        scale_fill_brewer (type = "div",
+                           palette = "RdBu",
+                           direction = -1,
+                           aesthetics = "fill",
+                           na.value = "orange") +
+        annotation_scale (location = "br", 
+                          width_hint = 0.5, 
+                          height = unit (0.1, "cm")) +
+        annotation_north_arrow (location = "tl", 
+                                which_north = "true", 
+                                style = north_arrow_fancy_orienteering,
+                                height = unit (1.25, "cm"),
+                                width = unit (1, "cm")) +
+        labs (fill = "Bulls:100 Cows") +
+        geom_label(data = data.wmu.moose.bc.2, 
+                   aes(X, Y, label = bulls_100cows), 
+                   size = 2.5) +
+        theme (axis.title.x = element_blank(),
+               axis.title.y = element_blank())
+
+```
+
+
+
+
+- In 2007, moose pop estimaetd in Okanagan at  2200, upper and lower CI's of1300-3100 ( [Gyug 2007](http://a100.gov.bc.ca/pub/siwe/details.do?projectId=4279&surveyId=10889&pagerOffset=0))
+- In 2013,  moose pop =  3913 moose ± 454 and in 2017, moose pop estimaetd in Okanagan at 4352 ± 272 ( [Walker et al. 2017](http://a100.gov.bc.ca/pub/siwe/details.do?projectId=4279&surveyId=36576&pagerOffset=0))
+
+In WMU's where density was estimated more than once since 2000 (Fig. xx), moose densities were decresaing in WMU's 4-39 (1.58 moose/km^2^ to 0.34 moose/km^2^), 8-23 (0.38 moose/km^2^ to 0.31 moose/km^2^) and 8-24 (0.38 moose/km^2^ to 0.26 moose/km^2^) and increasing in WMU's 8-6 (0.33 moose/km^2^ to 0.14 moose/km^2^) and 8-11 (0.11 moose/km^2^ to 0.85 moose/km^2^). 
+
+```{r, moose pop density trend, fig.cap = "Figure xx. Trends moose density in the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
 data.moose.pop <- read.csv (file = here ("wildlife/data/okanagan/moose_density_20200504.csv"),
                             header = T)
 data.wmu <- sf::st_read (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb",
@@ -94,30 +208,42 @@ data.wmu <- sf::st_read (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb",
 data.wmu.moose <- merge (data.wmu, data.moose.pop, all = TRUE)
 data.wmu.moose <- data.wmu.moose [- c(74:77), ]
 data.wmu.moose.trend <- data.wmu.moose %>%
-                          filter (WILDLIFE_MGMT_UNIT_ID == "4-39" | WILDLIFE_MGMT_UNIT_ID == "8-1" | 
-                                  WILDLIFE_MGMT_UNIT_ID == "8-6" | WILDLIFE_MGMT_UNIT_ID == "8-8" | 
-                                  WILDLIFE_MGMT_UNIT_ID == "8-9" | WILDLIFE_MGMT_UNIT_ID == "8-10" | 
-                                  WILDLIFE_MGMT_UNIT_ID == "8-11" | WILDLIFE_MGMT_UNIT_ID == "8-12" | 
-                                  WILDLIFE_MGMT_UNIT_ID == "8-14" | WILDLIFE_MGMT_UNIT_ID == "8-21" | 
-                                  WILDLIFE_MGMT_UNIT_ID == "8-23" | WILDLIFE_MGMT_UNIT_ID == "8-24" | 
-                                  WILDLIFE_MGMT_UNIT_ID == "8-25") # these units have >1 record
+                          filter (WILDLIFE_MGMT_UNIT_ID == "4-39" | # WILDLIFE_MGMT_UNIT_ID == "8-1" | 
+                                  WILDLIFE_MGMT_UNIT_ID == "8-6" | # WILDLIFE_MGMT_UNIT_ID == "8-8" | 
+                                  # WILDLIFE_MGMT_UNIT_ID == "8-9" | 
+                                  # WILDLIFE_MGMT_UNIT_ID == "8-10" | 
+                                  WILDLIFE_MGMT_UNIT_ID == "8-11" | # WILDLIFE_MGMT_UNIT_ID == "8-12" | 
+                                  # WILDLIFE_MGMT_UNIT_ID == "8-14" | 
+                                  # WILDLIFE_MGMT_UNIT_ID == "8-21" | 
+                                  WILDLIFE_MGMT_UNIT_ID == "8-23" | WILDLIFE_MGMT_UNIT_ID == "8-24"  
+                                  # WILDLIFE_MGMT_UNIT_ID == "8-25"
+                                  ) # these units have >1 record for density
 data.wmu.moose.trend$year <- as.numeric (data.wmu.moose.trend$year)
 
 ggplot (data = data.wmu.moose.trend,
         aes (x = year, y = density)) +
   geom_point () +
-  #geom_smooth () +
-  facet_grid (~ WILDLIFE_MGMT_UNIT_ID,
-              scales = "free") +
+  geom_smooth (method = lm) +
+  facet_grid (~ WILDLIFE_MGMT_UNIT_ID) +
+  theme_bw () +
   theme (axis.text.x = element_text (angle = 90)) +
-  scale_x_continuous (labels = scales::number_format (accuracy = 0))
-
-
-label = round (year, digits = 0)
-
-
-
+  scale_y_continuous (limits = c (0, 3),
+                      breaks = c(0, 0.5, 1, 1.5, 2, 2.5, 3)) + 
+  ylab ("Density (moose/km2)") + 
+  xlab ("Year")
+  
 ```
+
+
+
+
+
+
+
+
+
+
+
 
 
 
