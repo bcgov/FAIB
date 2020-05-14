@@ -134,6 +134,8 @@ ggplot (data = data.wmu.moose.dns) +
 
 
 
+
+
 bull/cow ratios
 
 
