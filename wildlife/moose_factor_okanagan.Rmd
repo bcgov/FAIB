@@ -1,7 +1,7 @@
 ---
-title: "Moose Factor"
+title: "Okanagan Timber Supply Review 2020: Moose"
 author: "Tyler Muhly"
-date: "13/03/2020"
+date: "22/05/2020"
 output: html_document
 ---
 
@@ -17,17 +17,17 @@ require (tidyr)
 require (scales)
 ```
 
-## 1. Importance of Moose in the Timber Supply Area
-Recent court decisions in British Columbia (BC) have stated that statutory decision makers must use credible information to consider the effects of land management decisions, including AAC determinations, on Indigenous peoples rights to harvest wildlife (e.g., see [William v. British Columbia 2012](https://www.bccourts.ca/jdb-txt/CA/12/02/2012BCCA0285.htm) and [West Moberly First Nations v. British 2011](https://www.bccourts.ca/jdb-txt/CA/11/02/2011BCCA0247.htm)). Accommodations to First Nations communities for impacts of forest harvest on wildlife may be necessary as part of some AAC decisions. 
+## 1. Importance of Moose in British Columbia and the Okanagan Timber Supply Area
+Recent court decisions in British Columbia (BC) have stated that statutory decision makers must use credible information to consider the effects of land management decisions, including allowable annual cut (AAC) determinations, on Indigenous peoples rights to harvest wildlife (e.g., see [William v. British Columbia 2012](https://www.bccourts.ca/jdb-txt/CA/12/02/2012BCCA0285.htm) and [West Moberly First Nations v. British Columbia 2011](https://www.bccourts.ca/jdb-txt/CA/11/02/2011BCCA0247.htm)). Accommodations to First Nations communities for impacts of forest harvest on wildlife may be necessary as part of some AAC decisions. 
 
-Several meetings (Dec. 15, 2016, January 30, 2017 and April 12. 2017) were held with the Secwepemc nations, including Adam's Lake Indian Band and Splatsin First Nations to discuss key wildlife values in the Okanagan TSA that could be considered as part of the TSR. The Secwepemc Nations have a signed reconcilitation agreement with the Province (April 2013) that promotes meaningful engagement between governments on stratgic topics, including forestry and wildlfei managment. 
+In general, moose are a highly valued wildlife species in North America for a variety of cultural and economic reasons ( [Timmermann and Rogers 2005](https://pdfs.semanticscholar.org/55d2/86e83dd7cae6da270c153858b3d1a98d89de.pdf)). Prior to European colonization, moose were used extensively by Indigenous peoples for food, clothing and shelter ( [Moose In British Columbia](http://www.env.gov.bc.ca/wld/documents/moose.pdf)). In the last 100 years, moose have become an important, nutritious, staple food of many interior and coastal First Nations communities in BC ( [First Nations Health Authority fact sheet](https://www.fnha.ca/Documents/Traditional_Food_Fact_Sheets.pdf)). 
 
-Sustainability of moose popualtions was identfied by as a priority value by the Secwepemc Nations. In general, moose are a highly valued wildlife species in North America for a variety of cultural and economic reasons ( [Timmermann and Rogers 2005](https://pdfs.semanticscholar.org/55d2/86e83dd7cae6da270c153858b3d1a98d89de.pdf)). Prior to European colonization, moose were used extensively by Indigenous peoples for food, clothing and shelter ( [Moose In British Columbia](http://www.env.gov.bc.ca/wld/documents/moose.pdf)). In the last 100 years, moose have become an important, nutritious, staple food of many interior and coastal First Nations communities in BC ( [First Nations Health Authority fact sheet](https://www.fnha.ca/Documents/Traditional_Food_Fact_Sheets.pdf)). The Secwempemc nations developed a colalborative [Moose and Watershed stewarship pilot porgram](https://www2.gov.bc.ca/gov/content/industry/forestry/managing-our-forest-resources/sustainable-forest-management-practices/moose-watershed-stewardship-pilot) with the Thompson Rivers Natural Resource District to improve moose sustainability in the Okanagan TSA region. This plan outlines specific commitments made by BC Timber Sales (BCTS) and forest industry beyond lesgislative requirements to improve moose habtiats in the Okanagan TSA. 
+Several meetings (Dec. 15, 2016, January 30, 2017 and April 12. 2017) were held with the Secwepemc Nations, including Adam's Lake Indian Band and Splatsin First Nations to discuss key wildlife values in the Okanagan timber suppyl area (TSA) that should be considered as part of the timber supply review (TSR). Sustainability of moose populations was identfied as a priority value by the Secwepemc Nations. In addition, the Secwempemc Nations previously developed a collaborative [Moose and Watershed stewarship pilot porgram](https://www2.gov.bc.ca/gov/content/industry/forestry/managing-our-forest-resources/sustainable-forest-management-practices/moose-watershed-stewardship-pilot) with the Thompson Rivers Natural Resource District to improve moose sustainability in some portions of the Okanagan TSA. 
 
 ## 2. Key Relationships Between Moose and Forestry   
-Research has shown that forestry activity influences moose density and distribution, both positively and negatively. Forestry cutblocks remove forest canopy, which generally increases the production of deciduous shrub browse on landscapes, which can positively influence moose. Shrub production in forestry cutblocks varies, but appears to peak anywhere from at 5 to 30 years after harvest, and moose appear to use these stand types the most. Cutblocks less than 5 years old and older than 30 years old (i.e., mid-seral stands), appear to generally be of less forage value to moose and thus receive less use as foraging habtiat. Older stands, including mature cutblocks, can benefit moose by providing valuable cover habitat. Closed canpoy conifer forest is important habitat for providing thermal cover in summer and to intercept snow in high snowfall years or areas. 
+Research has shown that forestry activity influences moose density and distribution, both positively and negatively. Forestry cutblocks remove forest canopy, which generally increases the production of deciduous shrub browse on landscapes, which can positively influence moose. Shrub production in forestry cutblocks varies, but appears to peak anywhere from at 5 to 30 years after harvest, and moose appear to use these stand types the most. Cutblocks less than 5 years old and older than 30 years old (i.e., mid-seral stands), appear to generally be of less forage value to moose and receive less use as foraging habitat. However, older stands, including mature cutblocks, can benefit moose by providing valuable cover habitat. Closed canopy conifer forest stands are important habitat for providing thermal cover in summer and to intercept snow in high snowfall years or areas. 
 
-Forest harvest, when done in moderation and in a way that creates a complex configuration of forest stands, can benefit moose. However, the creation of road infrastrucutre to extract timber appears to neutralize those benefits and in some cases negatively affects moose density and distribution overall. Forestry roads can make areas more accessible to moose hunters, increasing hunting mortality, which can limit moose population size. The overall effects of forestry on moose are likely negative when roads endure on the landscape and are not actively decommissioned or recovered. 
+Forest harvest, when done in moderation and in a way that creates a complex configuration of forest stands, can benefit moose. However, the creation of road infrastrucutre to extract timber may neutralize those benefits and in some cases negatively affects moose density and distribution overall. Forestry roads can make areas more accessible to moose hunters, increasing hunting mortality, which can limit moose population size. The overall effects of forestry on moose are likely negative when roads endure on the landscape and are not actively decommissioned or recovered. 
 
 Moose have an important and complex relationship with forestry development. Based on a review of previous research on the effects of forestry on moose, the relationship is most likely to be positive when:
   - At the scale of a moose home range (i.e., approximately 10 km^2^), forest cutblocks are interspersed with large mature or old forest stands, and cut in a progressive way over a 5 to 10 year period so there is a distribution of cutblock ages 
@@ -35,31 +35,13 @@ Moose have an important and complex relationship with forestry development. Base
   - Roads are minimized, blocked, deactivated and restored
 
 ## 3. Forestry-related Indicators of Moose Habitat and Populations
-Within the context of the key moose-forestry relationships identified above, there are some potential indicators or constraints that could be implemented as part of TSA models, including: 
-  - the area of early, mid and later seral forest stands; for example, a dsitrbituion of 40% five to 30 year old cutbloks and 20% old forest with dense canpopy closure may be ideal targest for a landscape unit or watershed 
-  - road density, for example, a threshold within a landscape unit or watershed 
-  - cutblock replanting stocking targets, for example, implementation of low density conifer stocking (low stems/ha) in areas where moose forage production is a priority 
-
-The [Moose and Watershed Stewardship Pilot Project](https://www2.gov.bc.ca/assets/gov/farming-natural-resources-and-industry/forestry/stewardship/moose-and-watershed-stewardship-pilot/mwsp_final_plan_april_5_2016.pdf) outlines the following commitments to enhance moose habitat in defined areas (i.e., 'moose polygons') of the region:
-  - maintain 40% of moose polygons as thermal cover (conifer, ≥15m in height, and ≥5 ha in size) with a spatial distribution over a moose home range of 10km^2^
-  - maintain 40% of areas outside of moose polygons as thermal cover
-  - partial cutting in a 200m management zone surrounding key habitat elements for moose (wetlands and lakes ≥1 ha, wetland complexes)
-  - rehabilitation of permanent roads in proximity to key habitat elements, and temporary roads
-  - manage brush to respect forage values for moose
-  - create an access management plan
-While these commitments apply to a pilot study area, which included the Criss Creek, Jamieson Creek and Tranquille River watersheds, we can test how some of these commitments might influence timber supply across the Okanagan TSA. 
-
-Based on the above, we used the following indicators to assess current and future conditions of moose habitat in the Okanagan TSA:
-  - percentage of watershed area that is conifer forest stands ≥15m tall, with an ideal percentage of 40% 
+Based on previous resarch and what can be simulated from TSR models, we used the following indicators to assess current and future conditions of moose habitat in the Okanagan TSA:
   - percentage of watershed area that is 5 to 30 years old, with an ideal percentage of 30%
+  - percentage of watershed area that is conifer stands greater than 5 ha in size and 15m tall, with an ideal percentage of 40%
   - road density in a watershed area, with an ideal target of less than 1km/km^2^ 
 
-Caveats with these indicators; baed on assumnptiosn fo what is 'good' habtait for moose, but recent reseearch is findign these not always necessary. E.g., forestry activity seems to reduce mortality on adults feamls by wolves, which may postively benefit those poatulatiosn overall, despite increased risk for moose in disturbed areas,
-
-
-
 ## 4. Current State of Moose Habitat and Populations in the Timber Supply Area
-Data were downloaded from [DataBC](https://data.gov.bc.ca/) on April 7, 2020, and saved into a file geodatabase. Data that were downlaoded included the [digital road atlas (DRA)](https://catalogue.data.gov.bc.ca/dataset/digital-road-atlas-dra-master-partially-attributed-roads), [forest tenure (FTEN) roads](https://catalogue.data.gov.bc.ca/dataset/forest-tenure-road-segment-lines), [forest vegetation resources inventory (VRI)](https://catalogue.data.gov.bc.ca/dataset/vri-2019-forest-vegetation-composite-rank-1-layer-r1-), [TSA boundaries](https://catalogue.data.gov.bc.ca/dataset/fadm-timber-supply-area-tsa), [freshwater atlas assessment watershed areas (AWAs)](https://catalogue.data.gov.bc.ca/dataset/freshwater-atlas-assessment-watersheds), [landscape unit (LU) boundaries](https://catalogue.data.gov.bc.ca/dataset/landscape-units-of-british-columbia-current) and [wildlife management unit (WMU) boundaries](https://catalogue.data.gov.bc.ca/dataset/wildlife-management-units). In addition, BC freshwater atlas data on [wetlands](https://catalogue.data.gov.bc.ca/dataset/freshwater-atlas-wetlands), [lakes](https://catalogue.data.gov.bc.ca/dataset/freshwater-atlas-lakes) and [rivers](https://catalogue.data.gov.bc.ca/dataset/freshwater-atlas-rivers) were downloaded to identify high-qaulity habtiat areas for moose.
+Spatial habtiat data were downloaded from [DataBC](https://data.gov.bc.ca/) on April 7, 2020, and saved into a file geodatabase. Data that were downloaded included the [digital road atlas (DRA)](https://catalogue.data.gov.bc.ca/dataset/digital-road-atlas-dra-master-partially-attributed-roads), [forest tenure (FTEN) roads](https://catalogue.data.gov.bc.ca/dataset/forest-tenure-road-segment-lines), [forest vegetation resources inventory (VRI)](https://catalogue.data.gov.bc.ca/dataset/vri-2019-forest-vegetation-composite-rank-1-layer-r1-), [TSA boundaries](https://catalogue.data.gov.bc.ca/dataset/fadm-timber-supply-area-tsa), [freshwater atlas assessment watershed areas (AWAs)](https://catalogue.data.gov.bc.ca/dataset/freshwater-atlas-assessment-watersheds), [landscape unit (LU) boundaries](https://catalogue.data.gov.bc.ca/dataset/landscape-units-of-british-columbia-current) and [wildlife management unit (WMU) boundaries](https://catalogue.data.gov.bc.ca/dataset/wildlife-management-units). 
 
 The DRA, FTEN roads, freshwater atlas and VRI data were 'clipped' to the Okanagan TSA boundary. The linear DRA and FTEN roads data were merged together and then converted to a 20 m resolution raster to remove duplicate roads in both datasets (i.e., roads less than 20 m apart). I then converted data back to linear data using the ArcScan extension, with the following settings: 
 - Geometrical intersection 
@@ -69,21 +51,22 @@ The DRA, FTEN roads, freshwater atlas and VRI data were 'clipped' to the Okanaga
 - Smoothing weight = 3 
 - Hole size = 0 
 
-Roads data, freshwater atlas data and data on forest stand crown closure, species, projected age and projected height from VRI were Unioned to TSA, WMU, LU and AWA boundaries in ArcGIS 10.6.
-
+Roads data and data on forest stand crown closure, species, projected age and projected height from VRI were Unioned to TSA, WMU, LU and AWA boundaries in ArcGIS 10.6.
 
 ### Moose Population Status and Trends
-Searched SIWE for 'moose' in Okanagan and Thompson regions. 
+I searched the BC government's species inventory web explorer (SIWE) for 'moose' inventory data collected in the Okanagan or Thompson regions. I recorded data on moose density, populations, bull:cow ratios and calf:cow ratios.  
 
-The most recent moose density estimates were highest in the central portions of the TSA (Fig. xx). Moose densities ranged from 0.85 moose/km^2^ in WMU 8-11 to 0.22 moose/km^2^ in WMU 8-21. Most estimates were obtained from 2011 to 2019, with the exception of WMU 3-12 (0.26 moose/km^2^) and WMU 8.10 (0.27 moose/km^2^), which were obtained in 1985 adn 1999, respectively. 
+Recent moose density estimates in the Okanagan TSA ranged from 0.85 moose/km^2^ in WMU 8-11 to 0.22 moose/km^2^ in WMU 8-21 (Fig. 1). Most of these estimates were obtained between 2011 to 2019, with the exception of WMU 3-12 (0.26 moose/km^2^) and WMU 8.10 (0.27 moose/km^2^), which were obtained in 1985 and 1999, respectively. 
 
-```{r, moose pop density map, fig.cap = "Figure xx. Most recent moose density estimates by wildlife management unit in the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
+```{r, moose pop density map, fig.cap = "Figure 1. Most recent moose density estimates by wildlife management unit in the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
 data.moose.pop <- read.csv (file = here ("wildlife/data/okanagan/moose_density_20200504.csv"),
                             header = T)
 data.wmu <- sf::st_read (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb",
-                         layer = "clip_wmu")
+                         layer = "clip_wmu", 
+                         quiet = T)
 data.tsa <- sf::st_read (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb",
-                         layer = "tsa_outer")
+                         layer = "tsa_outer", 
+                         quiet = T)
 
 data.wmu.moose <- merge (data.wmu, data.moose.pop, all = TRUE)
 data.wmu.moose.dns <- data.wmu.moose %>%
@@ -126,42 +109,29 @@ ggplot (data = data.wmu.moose.dns) +
                    size = 2.5) +
         theme (axis.title.x = element_blank(),
                axis.title.y = element_blank())
-
 ```
 
+The ratio of bull moose to cow moose is often used to indicate hunting pressure on moose populations, and a ratio of greater than 30 bulls to 100 cows is a typical management target, where populations below that indicate a heavily hunted, and potentially unstable population ( [Young and Boertje 2008](https://alcesjournal.org/index.php/alces/article/view/37); [Walker et al. 2017](http://a100.gov.bc.ca/pub/siwe/download.do?docId=34052)). 
 
+Recent bull/cow ratios indicate that moose populations were under relatively high hunting pressure in the south and central portions of the TSA, ranging from 6 to 16 bulls:cows (Fig. 2). Ratios were highest in the eastern and west-central portions of the TSA, reaching up to 85 bulls:cows in WMU 8-14.
 
-
-
-
-
-
-bull/cow ratios
-
-
-- ideal bull ratio threshold > 30/100 cows ( [Walker et al. 2017](http://a100.gov.bc.ca/pub/siwe/details.do?projectId=4279&surveyId=36576&pagerOffset=0))
-
-
-
-
-```{r, moose bull/cow ratio, fig.cap = "Figure xx. Most recent moose bull/cow ratios by wildlife management unit in the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
+```{r, moose bull/cow ratio, fig.cap = "Figure 2. Most recent moose bull/cow ratios by wildlife management unit in the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
 data.moose.pop <- read.csv (file = here ("wildlife/data/okanagan/moose_density_20200504.csv"),
                             header = T)
 data.wmu <- sf::st_read (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb",
-                         layer = "clip_wmu")
+                         layer = "clip_wmu", 
+                         quiet = T)
 data.tsa <- sf::st_read (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb",
-                         layer = "tsa_outer")
+                         layer = "tsa_outer", 
+                         quiet = T)
 data.wmu.moose <- merge (data.wmu, data.moose.pop, all = TRUE)
 data.wmu.moose.bc <- data.wmu.moose %>%
                         filter (!is.na (bulls_100cows))
-
-data.wmu.moose.bc <- data.wmu.moose.bc [data.wmu.moose.dns$WILDLIFE_MGMT_UNIT_ID != "4-32" &
-                                        data.wmu.moose.dns$WILDLIFE_MGMT_UNIT_ID != "4-39" &
-                                        data.wmu.moose.dns$WILDLIFE_MGMT_UNIT_ID != "3-42" &
-                                        data.wmu.moose.dns$WILDLIFE_MGMT_UNIT_ID != "8-4" &
-                                        data.wmu.moose.dns$WILDLIFE_MGMT_UNIT_ID != "8-15" , ]
-data.wmu.moose.bc.2 <- data.wmu.moose.bc [c (1, 2, 8, 11, 19, 21, 24, 25, 27, 31, 32, 34, 36, 38, 44, 48), ] 
-
+### FILTER OUT PARTIAL  WMUs ###
+#### NOT 2 to 11, 32, 46 to 49, 62
+data.wmu.moose.bc.2 <- data.wmu.moose.bc [c (1, 12:31, 33:45, 50:61), ] 
+data.wmu.moose.bc.2 <- data.wmu.moose.bc.2 [c (1, 2, 8, 15, 19, 21, 24, 25, 27, 31, 32, 34, 35, 41, 45), ] 
+# get the latest number
 data.wmu.moose.bc.2$brks_bc <- cut (data.wmu.moose.bc.2$bulls_100cows, 
                                         breaks = c (0, 15, 30, 45, 60, 75, 90, Inf), 
                                         labels = c ("0 - 14", "15 - 29", "30 - 44", "45 - 59",
@@ -194,23 +164,70 @@ ggplot (data = data.wmu.moose.bc.2) +
 
 ```
 
+The ratio of calves to cow moose is often used as an indicator of moose population trend, where ratios of 25 to 30 indicate a stable population, and ratios greater than 30 indicate an increasing population ( [FLNRORD 2019](http://www.env.gov.bc.ca/fw/wildlife/management-issues/docs/2019%20Moose%20Factsheet.pdf)). 
 
+The most recent calf/cow ratios were lowest in the north-central and south-central portions of the TSA, and highest in the central and far southern portions of the TSA (Fig. 3). The lowest calf:cow ratios (19) were less than 25, indicating a potential decreasing population in those areas. However, the majority of WMUs were close to or above 30 calves:100 cows, indicating a high potential for stable to increasing population trends for much of the TSA.
 
-
-- In 2007, moose pop estimaetd in Okanagan at  2200, upper and lower CI's of1300-3100 ( [Gyug 2007](http://a100.gov.bc.ca/pub/siwe/details.do?projectId=4279&surveyId=10889&pagerOffset=0))
-- In 2013,  moose pop =  3913 moose ± 454 and in 2017, moose pop estimaetd in Okanagan at 4352 ± 272 ( [Walker et al. 2017](http://a100.gov.bc.ca/pub/siwe/details.do?projectId=4279&surveyId=36576&pagerOffset=0))
-
-In WMU's where density was estimated more than once since 2000 (Fig. xx), moose densities were decresaing in WMU's 4-39 (1.58 moose/km^2^ to 0.34 moose/km^2^), 8-23 (0.38 moose/km^2^ to 0.31 moose/km^2^) and 8-24 (0.38 moose/km^2^ to 0.26 moose/km^2^) and increasing in WMU's 8-6 (0.33 moose/km^2^ to 0.14 moose/km^2^) and 8-11 (0.11 moose/km^2^ to 0.85 moose/km^2^). 
-
-```{r, moose pop density trend, fig.cap = "Figure xx. Trends moose density in the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
+```{r, calf/cow ratio, fig.cap = "Figure 3. Most recent moose calf/cow ratios by wildlife management unit in the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
 data.moose.pop <- read.csv (file = here ("wildlife/data/okanagan/moose_density_20200504.csv"),
                             header = T)
 data.wmu <- sf::st_read (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb",
-                         layer = "clip_wmu")
+                         layer = "clip_wmu", 
+                         quiet = T)
+data.tsa <- sf::st_read (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb",
+                         layer = "tsa_outer", 
+                         quiet = T)
+data.wmu.moose <- merge (data.wmu, data.moose.pop, all = TRUE)
+data.wmu.moose.bc <- data.wmu.moose %>%
+                        filter (!is.na (calves_100cows))
+### FILTER OUT PARTIAL  WMUs ###
+#### NOT 2 to 11, 32, 46 to 49, 62
+data.wmu.moose.bc.2 <- data.wmu.moose.bc [c (1, 12:31, 33:45, 50:61), ] 
+data.wmu.moose.bc.2 <- data.wmu.moose.bc.2 [c (1, 2, 8, 15, 19, 21, 24, 25, 27, 31, 32, 34, 35, 41, 45), ] 
+data.wmu.moose.bc.2$brks_bc <- cut (data.wmu.moose.bc.2$calves_100cows, 
+                                        breaks = c (0, 10, 20, 30, 40, 50, 60, 70, Inf), 
+                                        labels = c ("0 - 9", "10 - 19", "20 - 29", "30 - 39",
+                                                    "40 - 49", "50 - 59", "60 - 69", ">70"))
+data.wmu.moose.bc.2 <- cbind (data.wmu.moose.bc.2, st_coordinates (st_centroid (data.wmu.moose.bc.2)))
+
+ggplot (data = data.wmu.moose.bc.2) +
+        geom_sf (data = data.wmu.moose.bc.2, aes (fill = brks_bc)) +
+        geom_sf (data = data.tsa, fill = NA) +
+        scale_fill_discrete () +
+        scale_fill_brewer (type = "div",
+                           palette = "RdBu",
+                           direction = -1,
+                           aesthetics = "fill",
+                           na.value = "orange") +
+        annotation_scale (location = "br", 
+                          width_hint = 0.5, 
+                          height = unit (0.1, "cm")) +
+        annotation_north_arrow (location = "tl", 
+                                which_north = "true", 
+                                style = north_arrow_fancy_orienteering,
+                                height = unit (1.25, "cm"),
+                                width = unit (1, "cm")) +
+        labs (fill = "Calves:100 Cows") +
+        geom_label(data = data.wmu.moose.bc.2, 
+                   aes(X, Y, label = calves_100cows), 
+                   size = 2.5) +
+        theme (axis.title.x = element_blank(),
+               axis.title.y = element_blank())
+
+```
+
+Recently, the moose population appears to have been increasing across the Okanagan region. In 2007, the population was estimated at 2,200 animals ( [Gyug 2007](http://a100.gov.bc.ca/pub/siwe/details.do?projectId=4279&surveyId=10889&pagerOffset=0)), then it was estimated at 3,913 animals in 2013 and 4,352 in 2017 ( [Walker et al. 2017](http://a100.gov.bc.ca/pub/siwe/details.do?projectId=4279&surveyId=36576&pagerOffset=0)). However, within the Okanagan TSA there were some WMUs where moose populations appeared to be decreasing (Fig. 4). Moose densities decreased from 0.38 moose/km^2^ to 0.31 moose/km^2^ and 0.38 moose/km^2^ to 0.26 moose/km^2^ in WMUs 8-23 and 8-24, respectively, between 2003 and 2014. 
+
+```{r, moose pop density trend, fig.cap = "Figure 4. Trends in moose density in wildlife management units with more than one recent density estimate within the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
+data.moose.pop <- read.csv (file = here ("wildlife/data/okanagan/moose_density_20200504.csv"),
+                            header = T)
+data.wmu <- sf::st_read (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb",
+                         layer = "clip_wmu", 
+                         quiet = T)
 data.wmu.moose <- merge (data.wmu, data.moose.pop, all = TRUE)
 data.wmu.moose <- data.wmu.moose [- c(74:77), ]
 data.wmu.moose.trend <- data.wmu.moose %>%
-                          filter (WILDLIFE_MGMT_UNIT_ID == "4-39" | # WILDLIFE_MGMT_UNIT_ID == "8-1" | 
+                          filter (# WILDLIFE_MGMT_UNIT_ID == "4-39" | WILDLIFE_MGMT_UNIT_ID == "8-1" | 
                                   WILDLIFE_MGMT_UNIT_ID == "8-6" | # WILDLIFE_MGMT_UNIT_ID == "8-8" | 
                                   # WILDLIFE_MGMT_UNIT_ID == "8-9" | 
                                   # WILDLIFE_MGMT_UNIT_ID == "8-10" | 
@@ -229,46 +246,34 @@ ggplot (data = data.wmu.moose.trend,
   facet_grid (~ WILDLIFE_MGMT_UNIT_ID) +
   theme_bw () +
   theme (axis.text.x = element_text (angle = 90)) +
-  scale_y_continuous (limits = c (0, 3),
-                      breaks = c(0, 0.5, 1, 1.5, 2, 2.5, 3)) + 
+  scale_y_continuous (limits = c (0, 1),
+                      breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1)) + 
   ylab ("Density (moose/km2)") + 
   xlab ("Year")
   
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ### Road Density
-Current road density (km/km^2^) was estimated at a AWA scale (Fig. 1). Road density was relatively high (greater than 2 km/km^2^) across much of the TSA. Lower road densities, less than 1 km/km^2^ typically occurred in the northeast (Monashee mountains and towards Revelstoke), and southwest (EC Manning and Cathedral provincial parks) portions of the TSA. 
+Current road density (km/km^2^) estimates were relatively high (greater than 2 km/km^2^) across much of the Okanagan TSA (Fig. 5). Lower road densities, less than 1 km/km^2^, typically occurred in the northeast (Monashee mountains and towards Revelstoke), and southwest (EC Manning and Cathedral provincial parks) portions of the TSA. 
 
 ```{r, calc current road density, eval = F, echo = F, message = F, warning = F, include = F}
 data.roads <- sf::st_read (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb",
-                           layer = "union_roads_final")
+                           layer = "union_roads_final", 
+                           quiet = T)
 data.roads <- as.data.frame (data.roads)
 data.road.length <- as.data.table (data.roads %>%
                                     group_by (WATERSHED_FEATURE_ID) %>%
                                     summarise (sum_length_km = sum (Length_km)))
 data.awa <- sf::st_read (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb",
-                         layer = "clip_fawa")
+                         layer = "clip_fawa", 
+                         quiet = T)
 data.awa.roads <- merge (data.awa, data.road.length, all = TRUE)
 data.awa.roads$road_density <- data.awa.roads$sum_length_km / (data.awa.roads$AREA_HA*0.01) # ha to km2
 st_write (data.awa.roads, 
           dsn = here ("wildlife/data/okanagan/data_awa_roads.shp"))
 ```
 
-```{r, map current road density, fig.cap = "Figure 1. Map of current road density by freshwater assessment watershed area in the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
+```{r, map current road density, fig.cap = "Figure 5. Map of current road density by freshwater assessment watershed area in the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
 data.awa.roads <- sf::st_read (dsn = here ("wildlife/data/okanagan/data_awa_roads.shp"),
                                quiet = T)
 data.awa.roads$rd_dn [is.na (data.awa.roads$rd_dn)] <- 0
@@ -298,11 +303,12 @@ ggplot (data = data.awa.roads) +
 ```
 
 ### Forest Cover for Moose
-The AWA's with the highest proportion of conifer forest cover for moose (i.e., stands at least 5 ha in size and 15 m tall) occurred in the west-central portion of the TSA, west of Okanagan Lake, north of Shuswap Lake and north of Osoyoos (Fig. 2). There were a limited number of AWA's with little amounts of conifer forest cover along the western edge of the TSA. AWA's with an approximately 40% proportion of conifer forest cover occurred in the east-central and north-west portions of the TSA. 
+The AWA's with the highest proportion of conifer forest cover for moose (i.e., stands at least 5 ha in size and 15 m tall) occurred in the west-central portion of the TSA, west of Okanagan Lake, north of Shuswap Lake and north of Osoyoos (Fig. 6). There were a limited number of AWA's with little amounts of conifer forest cover along the western edge of the TSA. AWA's with an approximately 40% proportion of conifer forest cover occurred in the east-central and north-west portions of the TSA. 
 
 ```{r, calc area of conifer stands >15m, eval = F, echo = F, message = F, warning = F, include = F}
 data.vri <- sf::st_read (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb",
-                         layer = "union_vri_lean")
+                         layer = "union_vri_lean", 
+                         quiet = T)
 data.vri <- as.data.frame (data.vri)
 data.area.height <- as.data.table (data.vri %>%
                                     filter (SPECIES_CD_1 == "B" | SPECIES_CD_1 == "BA" | SPECIES_CD_1 == "BB" |
@@ -325,14 +331,15 @@ data.area.height <- as.data.table (data.vri %>%
                                     group_by (WATERSHED_FEATURE_ID) %>%
                                     summarise (sum_area_ha = sum (AREA_HA)))
 data.awa <- sf::st_read (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb",
-                         layer = "clip_fawa")
+                         layer = "clip_fawa", 
+                         quiet = T)
 data.awa.height <- merge (data.awa, data.area.height, all = TRUE)
 data.awa.height$prop_moose_cover <- data.awa.height$sum_area_ha / data.awa.height$AREA_HA # proportion moose cover
 st_write (data.awa.height, 
           dsn = here ("wildlife/data/okanagan/data_awa_cover.shp"))
 ```
 
-```{r, map current forest cover, fig.cap = "Figure 2. Map of current conifer forest cover greater than 14 m tall and 5 ha patch size by freshwater assessment watershed area in the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
+```{r, map current forest cover, fig.cap = "Figure 6. Map of current percentage of conifer forest cover greater than 14 m tall and 5 ha patch size by freshwater assessment watershed area in the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
 data.awa.cover <- sf::st_read (dsn = here ("wildlife/data/okanagan/data_awa_cover.shp"),
                                quiet = T)
 data.awa.cover$prp_ [is.na (data.awa.cover$prp_)] <- 0
@@ -361,11 +368,12 @@ ggplot (data = data.awa.cover) +
 ```
 
 ### Early Seral Forest for Moose
-The amount of early seral forest (5 to 30 years old) from cutblocks was highest in the west central and southeast parts of the TSA (Fig. 3). Several AWA's in these areas exceeded a proportion of 0.40 early seral forest. The majority of AWA's were less than 0.20 early seral forest. AWA's in the approximately 0.30 range occurred primarily in southeast and east central portions of the TSA.
+The amount of early seral forest (5 to 30 years old) from cutblocks was highest in the west central and southeast parts of the TSA (Fig. 7). Several AWA's in these areas exceeded a proportion of 0.40 early seral cutblocks. The majority of AWA's were less than 0.20 early seral cutblocks.
 
 ```{r, calc area of cutblocks 5 to 30 yo, eval = F, echo = F, message = F, warning = F, include = F}
 data.cutblocks <- sf::st_read (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb",
-                               layer = "union_cutblocks")
+                               layer = "union_cutblocks", 
+                               quiet = T)
 data.cutblocks <- as.data.frame (data.cutblocks)
 data.cut.5.30 <- as.data.table (data.cutblocks %>%
                                     filter (HARVEST_YEAR >= 1988 & HARVEST_YEAR <= 2013) %>% # cutblocks 5 to 30 yo
@@ -373,14 +381,15 @@ data.cut.5.30 <- as.data.table (data.cutblocks %>%
                                     summarise (sum_area_ha = sum (AREA_HA)))
 data.cut.5.30 <- data.cut.5.30 [-1, ]
 data.awa <- sf::st_read (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb",
-                         layer = "clip_fawa")
+                         layer = "clip_fawa", 
+                         quiet = T)
 data.awa.cut <- merge (data.awa, data.cut.5.30, all = TRUE)
 data.awa.cut$prop_moose_food <- data.awa.cut$sum_area_ha / data.awa.cut$AREA_HA # proportion moose forage (5 to 30 yo cut)
 st_write (data.awa.cut, 
           dsn = here ("wildlife/data/okanagan/data_awa_cut5to30.shp"))
 ```
 
-```{r, map cutblocks 5 to 30 yo, fig.cap = "Figure 3. Map of cutblocks 5 to 30 years old by freshwater assessment watershed area in the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
+```{r, map cutblocks 5 to 30 yo, fig.cap = "Figure 7. Map of proportion of area of cutblocks 5 to 30 years old by freshwater assessment watershed area in the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
 data.awa.cut <- sf::st_read (dsn = here ("wildlife/data/okanagan/data_awa_cut5to30.shp"),
                              quiet = T)
 data.awa.cut$prp__ [is.na (data.awa.cut$prp__)] <- 0
@@ -408,52 +417,23 @@ ggplot (data = data.awa.cut, aes (fill = brks_prop_cut)) +
 old cutblocks") 
 ```
 
-
-
-
-
-
-
-
-
 ## 5. Moose Habitat and Population Management Tools 
+In general, moose have an important and complex relationship with forestry development. Previous research suggests that moose prefer a diversity of stand types, for example older and younger, open and more dense and conifer and deciduous stands. This can make habitat management for moose challenging, as it is difficult to develop and apply a simple forest management regime to meet all of these needs and maximize moose habitat. 
 
+Roads are typically found to have a negative effect on moose, increasing human accessiblity into moose habitat, and thus hunting pressure and disturbance that can negatively affect moose survival. Therefore, a management regime to minimize road density may be useful for minimizing forestry impacts on moose. However, moose populations seem to be stable or increasing across the TSA, despite relatively high (greater than 2 km/km^2^) road densities.   
 
-- Lillooet Forest District Moose Habitat Handbook recommends:
-  - 5 m adjacency
-  - 5 m height for secruity cover
-
-
-
-
-
-apply to where? moos epolygons plus hwat?
-
-
-
-
-
-moose polygons form Chris Procter.... access mamagment? threhold?
-
-
-
-
-
-
-
+Currently, there are no alternative proposed large-scale forest management regimes designed to maximize moose habitat quality in the Okanagan TSA, and no simulated alternstive regimes were applied within the TSR model. 
 
 ## 6. Simulated Future States of Moose Habitat and Populations Under Different Management Scenarios in the Timber Supply Area 
-
-
 ### Base Case Scenario
-
 #### Simulated Road Density
-Acorss the TSA, road density increased steadily but at small increments from 2018 to 2078 (Fig. 5). The median road density in AWA's in 2018 was 2.45 km/km^2^, which increased to 2.66 km/km^2^ by 2078. The increase in road density primarily occurred in a limited number of AWA's mostly along the edges of low road density areas in the northeast and southwest potions of the TSA (Fig. 6, Fig. 7). Much of the TSA was, and is simualted to remain at relatively high road densities (> 2 km/km^2^) for moose.
+Under the base case scenario, simulated road density increased steadily but at small increments from 2018 to 2078 across the TSA (Fig. 8). The median road density in AWA's in 2018 was 2.45 km/km^2^, which increased to 2.66 km/km^2^ by 2078. The increase in road density primarily occurred in a limited number of AWA's mostly along the edges of low road density areas in the northeast and southwest potions of the TSA (Fig. 9, Fig. 10). Much of the TSA was, and is simulated to remain at relatively high road densities (> 2 km/km^2^) for moose.
 
-```{r, calc area new cut and new roads by decade, eval = T, echo = F, message = F, warning = F}
+```{r, calc area new cut and new roads by decade, eval = F, echo = F, message = F, warning = F}
 ## current cutblocks
 data.cutblocks <- sf::st_read (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb",
-                               layer = "union_cutblocks")
+                               layer = "union_cutblocks", 
+                               quiet = T)
 data.cutblocks <- as.data.frame (data.cutblocks)
 cut.start <- as.data.table (data.cutblocks %>%
                               group_by (WATERSHED_FEATURE_ID) %>%
@@ -462,7 +442,8 @@ cut.start <- cut.start [-1, ]
 
 ## simulated future cutblocks, new area, not overlapping existing cb's
 data.future.cutblocks <- sf::st_read (dsn = "C:\\Work\\tsr\\data\\okanagan_tsr_20200407.gdb",
-                                      layer = "union_future_cutblocks_new_area")
+                                      layer = "union_future_cutblocks_new_area", 
+                                      quiet = T)
 data.future.cutblocks <- data.frame (data.future.cutblocks)
 
 # annual new area cut
@@ -763,7 +744,7 @@ st_write (data.awa.cut.decade,
           dsn = here ("wildlife/data/okanagan/data_awa_sim_cut0to30_road.shp"))
 ```
 
-```{r, boxplot current and sim road density, fig.cap = "Figure 5. Current and simulated future road density by freshwater assessment watershed area in the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
+```{r, boxplot current and sim road density, fig.cap = "Figure 8. Current and simulated future road density by decade in freshwater assessment watershed area in the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
 data.awa.road <- sf::st_read (dsn = here ("wildlife/data/okanagan/data_awa_sim_cut0to30_road.shp"),
                               quiet = T)
 data.awa.road <- as.data.table (data.awa.road)
@@ -793,7 +774,7 @@ ggplot (data = data.awa.road.box,
 
 ```
 
-```{r, map sim road density 2048, fig.cap = "Figure 6. Map of simulated road density in 2048 by freshwater assessment watershed area in the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
+```{r, map sim road density 2048, fig.cap = "Figure 9. Map of simulated road density in 2048 by freshwater assessment watershed area in the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
 data.awa.road <- sf::st_read (dsn = here ("wildlife/data/okanagan/data_awa_sim_cut0to30_road.shp"),
                               quiet = T)
 data.awa.road$brks_rd_dn_2048 <- cut (data.awa.road$r__2048, 
@@ -820,7 +801,7 @@ ggplot (data = data.awa.road) +
         labs (fill = "Road Density (km/km2)") 
 ```
 
-```{r, map sim road density 2078, fig.cap = "Figure 7. Map of simulated road density in 2078 by freshwater assessment watershed area in the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
+```{r, map sim road density 2078, fig.cap = "Figure 10. Map of simulated road density in 2078 by freshwater assessment watershed area in the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
 data.awa.road <- sf::st_read (dsn = here ("wildlife/data/okanagan/data_awa_sim_cut0to30_road.shp"),
                               quiet = T)
 data.awa.road$brks_rd_dn_2078 <- cut (data.awa.road$r__2068, 
@@ -850,7 +831,7 @@ ggplot (data = data.awa.road) +
 #### Simulated Early Seral Forest
 The median density of 0 to 30 year old cutblocks in AWA's was 0.09 km^2^/km^2^ in 2018. This increased slightly to 0.1 km^2^/km^2^ in 2028 and then declined to approximately 0.06 km^2^/km^2^ in subsequent decades. Cutblock density became more disbursed from 2018 to 2078 (i.e., there were more lower density cutblock AWA's and fewer high density AWA's). The location of cutblocks shifted from the west central portion of the TSA (Fig. 9), to east central portions in 2014 (Fig. 10) and northern portions (Fig. 11) of the TSA in 2078. 
 
-```{r, boxplot current and sim 0 to 30 cutblock density, fig.cap = "Figure 8. Distribtuion of current road density by freshwater assessment watershed area in the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
+```{r, boxplot current and sim 0 to 30 cutblock density, fig.cap = "Figure 8. Distribtuion of current cutblock density by freshwater assessment watershed area in the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
 data.awa.cut <- sf::st_read (dsn = here ("wildlife/data/okanagan/data_awa_sim_cut0to30_road.shp"),
                               quiet = T)
 data.awa.cut <- as.data.table (data.awa.cut)
@@ -934,7 +915,7 @@ ggplot (data = data.awa.cut) +
         labs (fill = "Cutblock Density (km2/km2)") 
 ```
 
-```{r, map sim cutblock density 2078, fig.cap = "Figure 10. Map of simulated cutblock density in 2078 by freshwater assessment watershed area in the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
+```{r, map sim cutblock density 2078, fig.cap = "Figure 11. Map of simulated cutblock density in 2078 by freshwater assessment watershed area in the Okanagan Timber Supply Area.", eval = T, echo = F, message = F, warning = F}
 data.awa.cut <- sf::st_read (dsn = here ("wildlife/data/okanagan/data_awa_sim_cut0to30_road.shp"),
                               quiet = T)
 data.awa.cut$brks_cut_2078 <- cut (data.awa.cut$p_030_207, 
@@ -961,5 +942,9 @@ ggplot (data = data.awa.cut) +
         labs (fill = "Cutblock Density (km2/km2)") 
 ```
 
+## 7. Conclusions
+In general, the coarse-scale moose population and habitat indicators used here suggest that moose populations are stable and habitat is in good condition across the majority of the TSA. There are no clear indications that previous forestry and other land use activites are negatively impacting the sustainability of moose populations in the region. Interestingly, road densities are high across much of the TSA, but they do not appear to be correlated with declining moose populations or high hunting pressure.     
 
+Simulated future forestry in the base case suggests that road density may increase in portions of the TSA. However, increases were relatively small (10%), and road densities were already high, indicating that future roads may not be a particularly large concern for moose management. Simulated future cutblock densities were on average lower across the TSA, and distribution was less dispersed. it is possible that future lower cutblock densities may create a shortage of forage for moose in some areas.
 
+Overall, the indicators suggest that at a coarse-scale, previous and future forestry activity has not and pnteitally will not had a clear negative impact on moose. 
