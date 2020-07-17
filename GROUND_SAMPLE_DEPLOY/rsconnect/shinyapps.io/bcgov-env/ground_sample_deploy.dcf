@@ -1,0 +1,10 @@
+name: ground_sample_deploy
+title:
+username:
+account: bcgov-env
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2393418
+bundleId: 3404574
+url: https://bcgov-env.shinyapps.io/ground_sample_deploy/
+when: 1595005490.59946
