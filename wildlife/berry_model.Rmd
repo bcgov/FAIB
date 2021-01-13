@@ -1,0 +1,281 @@
+---
+title: "Berry Modeling"
+author: "Tyler Muhly"
+date: "11/01/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library (data.table)
+library (ggplot2)
+```
+
+## Modeling Berry Occurence and Abundance to Support Timber Supply Review
+Here we model occurrence and abundance of berries as a function of stand characteristics to see if we can link to spatial timber supply/forest harvest models.
+
+Berries are important to grizzly bear, and appear to be related to forest stand characteristics, thus forestry may impact distribution and abundance of this important bear food. Can potentially use spatial timber supply models to look at distribution and abundance of berries over space and time under different forest management regimes
+
+## Berry Data
+Data on berry shrub occurrence, cover, fruit presence, and fruit abundance was obtained from Clayton Lamb, UBC. The data consists of two datasets, "VegModData_BEC_CL" and "Productivity_Data".
+
+The "VegModData_BEC_CL" dataset contains berry shrub species occurrence ("species_Occ") and percent cover ("species_Cover") data. Data was obtained from biogeoclimatic ecosystem classification (BEC) plots, and plots collected by Clayton Lamb or Mike Proctor. 
+
+The "Productivity_Data" dataset contains berry shrub species occurrence ("Species.Present"), shrub percent cover ("Species.Cover"), fruit occurrence ("Fruit.Present") and fruit percent cover ("Fruit.Cover") data. Where the species did not occur, or fruit did not occur, it was assigned an "NA" value. 
+
+Both datasets contain a variety of covariates representing large-scale environmental conditions at the vegetation plots. These were typically measured using spatial data in a GIS, and include data on time since cut ("TimeSinceCut") or fire ("TimeSinceFire"). Note that if locations had no documented forest harvest (cutblock) or fire, the "TimeSince" covariates were set to 118 years. Other data includes terrain (e.g., aspect ("aspect_30m_SRTM"), elevation ("DEM_30_bcalb"), ruggedness ("roughness_30m_SRTM"), slope ("slope_30m_SRTM")), landcover ("LandsatCC_2010_Fixed"	and "MODIS_LC"), and a variety of [downscaled climate data](http://raster.climatebc.ca/download/List_of_climate_variables.pdf) from the University of British Columbia 
+
+Here we focus on two key bear foods, huckleberry (*Vaccinium membranaceum*) and soap berry or buffaloberry (*Shepherdia canadensis*). 
+
+```{r, data}
+data.prod <- as.data.table (read.csv ("C:\\Work\\berries\\data\\Productivity_Data.csv")) # productivity data
+data.bec <- as.data.table (read.csv ("C:\\Work\\berries\\data\\VegModData_BEC_CL.csv")) # bec data; VACCMEM and SHEPCAN
+# Huckleberries
+data.prod.huck <-  data.prod [Species == "Vaccinium_membranaceum"]
+# Buffaloberry
+data.prod.buff <-  data.prod [Species == "Shepherdia_canadensis"]
+```
+
+## Data Exploration
+Here I do some basic data exploration of each dataset.
+
+### Huckleberry - Productivity Data
+Below I explore the huckleberry "productivity" data.
+
+#### Data Distributions
+
+##### Stand Age
+Below I explore distributions of stand age data for huckleberries. 
+
+Huckleberry were more likely to be detected in older (~23 years old) than younger (~19 years old) harvested stands.
+
+```{r, productivity data - huckleberry occurence - elevation distributions}
+data.prod.huck.na <-  data.prod.huck [Species.Present != ""] # drop NA values
+data.prod.huck.na.cut <-  data.prod.huck.na [CutBlock_Occurrence == 1] # only harvested origins
+data.prod.huck.na.cut$Species.Present <- as.factor (data.prod.huck.na.cut$Species.Present)
+
+ ggplot (data.prod.huck.na.cut, aes (x = Species.Present, y = TimeSinceCut)) +
+  geom_boxplot (outlier.colour = "red") +
+  labs (title = "Boxplot Harvest Orgin Stand Age at Sites where Huckleberry were Present (1) 
+or Absent (0)",
+        x = "Absent (0) and Present (1) Locations",
+        y = "Stand Age (years)")
+```
+Huckleberry cover was generally cosnsitent across cutblock age. 
+
+```{r, productivity data - huckleberry cover - elevation distributions}
+ ggplot (data.prod.huck.na.cut, aes (x = TimeSinceCut, y = Species.Cover)) +
+  geom_point () +
+  geom_smooth () +
+  labs (title = "Huckleberry Percent Cover in Cutblocks of Different Ages",
+        x = "Stand Age (years)",
+        y = "Species Cover")
+```
+
+Cutblock age may have a weak effect on huckleberry occurrence  at macro scale, but does nto appear to affect huckleberry cover.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##### Topographic 
+Below I explore distributions of topographic data for huckleberries. 
+
+Huckleberry were generally detected at higher (~1,750M) than lower (~1,250m) elevations.
+
+```{r, productivity data - huckleberry occurence - elevation distributions}
+data.prod.huck.na <-  data.prod.huck [Species.Present != ""] # drop NA values
+# elevation, by species presence/absence
+data.prod.huck.na$Species.Present <- as.factor (data.prod.huck.na$Species.Present)
+
+ ggplot (data.prod.huck.na, aes (x = Species.Present, y = DEM_30_bcalb)) +
+  geom_boxplot (outlier.colour = "red") +
+  labs (title = "Boxplot Elevation at Sites where Huckleberry were Present (1) or Absent (0)",
+        x = "Absent (0) and Present (1) Locations",
+        y = "Elevation (m)")
+```
+
+Huckleberry cover was generally highest at intermediate-high (~1,850m) elevations. 
+
+```{r, productivity data - huckleberry cover - elevation distributions}
+data.prod.huck.na <-  data.prod.huck [Species.Present != ""] # drop NA values
+
+ ggplot (data.prod.huck.na, aes (x = DEM_30_bcalb, y = Species.Cover)) +
+  geom_point () +
+  geom_smooth () +
+  labs (title = "Huckleberry Percent Cover Across Elevation",
+        x = "Elevation (m)",
+        y = "Species Cover")
+```
+
+Elevation appears to be important for huckleberry occurrence and cover at macro scale, and is a quadratic relationship for cover.
+
+Huckleberry were generally detected on steeper (~15 degrees) than flatter (~10 degrees) slopes.
+
+```{r, productivity data - huckleberry occurence - slope distributions}
+# slope, by species presence/absence
+ ggplot (data.prod.huck.na, aes (x = Species.Present, y = slope_30m_SRTM)) +
+  geom_boxplot (outlier.colour = "red") +
+  labs (title = "Boxplot Slope at Sites where Huckleberry were Present (1) or Absent (0)",
+        x = "Absent (0) and Present (1) Locations",
+        y = "Slope (degrees)")
+```
+
+Huckleberry cover was generally highest at intermediate (~20 degree) slopes. 
+
+```{r, productivity data - huckleberry cover - slope distributions}
+ ggplot (data.prod.huck.na, aes (x = slope_30m_SRTM, y = Species.Cover)) +
+  geom_point () +
+  geom_smooth () +
+  labs (title = "Huckleberry Percent Cover Across Slopes",
+        x = "Slope (degrees)",
+        y = "Species Cover")
+```
+Slope appears to be weakly influence huckleberry occurrence and cover at macro scale, and is a quadratic relationship for cover.
+
+Huckleberry were generally detected at more south-westerly (~180 degree) aspects, although the effect appeared to be small.
+
+```{r, productivity data - huckleberry occurence - aspect distributions}
+ ggplot (data.prod.huck.na, aes (x = Species.Present, y = aspect_30m_SRTM)) +
+  geom_boxplot (outlier.colour = "red") +
+  labs (title = "Boxplot Aspect at Sites where Huckleberry were Present (1) or Absent (0)",
+        x = "Absent (0) and Present (1) Locations",
+        y = "Aspect (Degrees)")
+```
+
+Huckleberry cover was generally highest at south-westerly (~150 degree) aspects. 
+
+```{r, productivity data - huckleberry cover - aspect distributions}
+ ggplot (data.prod.huck.na, aes (x = aspect_30m_SRTM, y = Species.Cover)) +
+  geom_point () +
+  geom_smooth () +
+  labs (title = "Huckleberry Percent Cover Across Aspect",
+        x = "Aspect (degrees)",
+        y = "Species Cover")
+```
+
+Aspect appears to be weakly influence huckleberry occurrence and cover at macro scale, and is a quadratic relationship for cover.
+
+
+
+
+
+
+
+
+
+```{r}
+
+
+
+TPI= Topographic position index
+TRI= Terrain Ruggedness Index
+CTI= compound topographic index, 90m downscaled to 30m
+Heatload= Heat load index, 90m downscaled to 30m
+Roughness= terrain roughness, standard deviation of dem
+Surfarea= surface area index 
+
+
+
+
+
+rsf.data.du6$wetland_demars <- relevel (rsf.data.du6$wetland_demars,
+                                        ref = "Upland Conifer") # upland conifer as referencce, as per Demars 2018
+rsf.data.du6$pttype <- as.factor (rsf.data.du6$pttype)
+
+### OUTLIERS ###
+ggplot (rsf.data.du6, aes (x = pttype, y = distance_to_resource_road)) +
+  geom_boxplot (outlier.colour = "red") +
+  labs (title = "Boxplot DU6, Distance to Resource Roads at Available (0) and Used (1) Locations",
+        x = "Available (0) and Used (1) Locations",
+        y = "Distance to Resource Road")
+     
+
+ggplot (rsf.data.du8, aes (x = distance_to_cut_5to9yo, fill = pttype)) + 
+  geom_histogram (position = "dodge", binwidth = 100) +
+  labs (title = "Histogram du8, Distance to  Cutblock 5 to 9 Years Old at Available (0) and Used (1) Locations",
+        x = "Distance to  Cutblock 5 to 9 Years Old",
+        y = "Count") +
+  scale_fill_discrete (name = "Location Type")
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r, covariate correlations}
+dist.cut.1.10.corr.du.6 <- dist.cut.corr.du.6 [c (10:19)]
+corr.1.10.du6 <- round (cor (dist.cut.1.10.corr.du.6, method = "spearman"), 3)
+p.mat.1.10 <- round (cor_pmat (corr.1.10.du6), 2)
+ggcorrplot (corr.1.10.du6, type = "lower", lab = TRUE, tl.cex = 10,  lab_size = 3, 
+            title = "DU6 Distance to Cutblock Correlation Years 1 to 10")
+ggsave ("C:\\Work\\caribou\\clus_github\\R\\caribou_habitat\\plots\\plot_dist_cut_corr_1_10_du6.png")
+
+```
+
+
+
+```{r, simple glm}
+
+### VIF 
+glm.du8 <- glm (pttype ~ distance_to_cut_1to4yo + distance_to_cut_5to9yo +
+                  distance_to_cut_10to29yo + distance_to_cut_30orOveryo +
+                  distance_to_resource_road + bec_label_reclass, 
+                data = rsf.data.du8,
+                family = binomial (link = 'logit'))
+car::vif (glm.du8)
+```
+
+
+
+```{r, glmer models}
+
+model.lme.du6.ew <- glmer (pttype ~ std.distance_to_cut_1to4yo + std.distance_to_cut_5to9yo + 
+                            std.distance_to_cut_10yoorOver + 
+                            (std.distance_to_cut_1to4yo | uniqueID) + 
+                            (std.distance_to_cut_5to9yo | uniqueID) +
+                            (std.distance_to_cut_10yoorOver | uniqueID), 
+                          data = dist.cut.data.du.6.ew, 
+                          family = binomial (link = "logit"),
+                          verbose = T,
+                          control = glmerControl (calc.derivs = FALSE, # these settings should provide results quicker
+                                                  optimizer = "nloptwrap", # these settings should provide results quicker
+                                                  optCtrl = list (maxfun = 2e5))) # 20,000 iterations)
+summary (model.lme.du6.ew)
+anova (model.lme.du6.ew)
+plot (model.lme.du6.ew) # should be mostly a straight line
+
+dist.cut.data.du.6.ew$preds.lme.re <- predict (model.lme.du6.ew, type = 'response') 
+dist.cut.data.du.6.ew$preds.lme.re.fe <- predict (model.lme.du6.ew, type = 'response', 
+                                                  re.form = NA,
+                                                  newdata = dist.cut.data.du.6.ew) 
+plot (dist.cut.data.du.6.ew$distance_to_cut_1to4yo, dist.cut.data.du.6.ew$preds.lme.re.fe) # fixed effect predictions against covariate value
+plot (dist.cut.data.du.6.ew$std.distance_to_cut_5to9yo, dist.cut.data.du.6.ew$preds.lme.re.fe) 
+plot (dist.cut.data.du.6.ew$std.distance_to_cut_10yoorOver, dist.cut.data.du.6.ew$preds.lme.re.fe) 
+AIC (model.lme.du6.ew)
+
+
+```
+
