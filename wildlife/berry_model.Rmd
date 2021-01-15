@@ -76,19 +76,19 @@ ggplot (data.prod.huck.na.origin, aes (x = Species.Present, fill = origin)) +
   scale_fill_discrete (name = "Stand Origin", labels = c("Unknown/Old", "Harvest", "Fire"))
 ```
 
-Huckleberry fruit tend to occur more in old, unknown origin stands compared to fire and harvest origin stands.
+Huckleberry fruit tend to occur more in old, unknown origin compared to fire and harvest origin stands.
 
 ```{r, productivity data - huckleberry fruit occurence - burn or harvest origin}
 data.prod.huck.na.origin$Fruit.Present <- as.factor (data.prod.huck.na.origin$Fruit.Present)
 data.prod.huck.na.origin <-  data.prod.huck.na.origin [Fruit.Present != ""] # drop NA values
 
 ggplot (data.prod.huck.na.origin, aes (x = Fruit.Present, fill = origin)) + 
-  geom_bar (position = "fill") +
+geom_bar (position = "fill") +
   scale_fill_discrete (name = "Stand Origin", labels = c("Unknown/Old", "Harvest", "Fire"))
 
 ```
 
-Huckleberry cover was highest in fire origin stands (~22%) compared to harvest origin stands (~17%), and stands of old, unknown origin (~12%). This suggests that origin type matters, but the effect is pretty small.
+Huckleberry cover was highest in fire origin stands (~20%) compared to harvest origin stands (~15%), and stands of old, unknown origin (~10%).
 
 ```{r, productivity data - huckleberry cover - burn or harvest origin}
 ggplot (data.prod.huck.na.origin, aes (x = origin, y = Species.Cover)) +
@@ -105,6 +105,7 @@ ggplot (data.prod.huck.na.origin, aes (x = origin, y = Fruit.Abund)) +
   labs (x = "Unknown Origin (0), Harvest Origin (1) and Fire Origin (2) Stands",
         y = "Huckleberry Fruit Abundance")
 ```
+
 
 Stand origin appears to influence huckleberry occurrence and cover, and huckleberry fruit occurrence and abundance.  Fire origin appears to positively influence huckleberry occurrence and cover, and fruit abundance. Fire origin may negatively influence fruit occurrence. Cutblock origin appears to negatively influence huckleberry fruit occurrence and abundance, but positively influences huckleberry cover. 
 
