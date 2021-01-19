@@ -61,7 +61,7 @@ data.prod.huck$origin.age <- ifelse ((data.prod.huck$origin == 1), data.prod.huc
 
 I then looked at the relationship between stand origin and occurrence and abudnace of huckleberry shrubs and fruit. 
 
-Huckleberry tend to occur more in fire and harvest origin stands than stands of old, unknown origin. This could be that huckleberry are in younger stands, but there does seem to be a differnce between origin type.
+Huckleberry tend to occur more in fire and harvest origin stands than stands of old, unknown origin. This could be that huckleberry are in younger stands, but there does seem to be a difference between origin type.
 
 ```{r, productivity data - huckleberry occurence - burn or harvest origin}
 
@@ -97,7 +97,7 @@ ggplot (data.prod.huck.na.origin, aes (x = origin, y = Species.Cover)) +
         y = "Huckleberry Cover")
 ```
 
-Huckleberry fruit abundance was highest in fire origin stands compared to harvest origin stands, and stands of old, unknown origin (~10%). This also suggests that origin type matters, but the effect on fruit is different than on shrub cover.
+Huckleberry fruit abundance was highest in fire origin stands compared to harvest origin stands, and stands of old, unknown origin. 
 
 ```{r, productivity data - huckleberry fruit abundance - burn or harvest origin}
 ggplot (data.prod.huck.na.origin, aes (x = origin, y = Fruit.Abund)) +
@@ -106,33 +106,57 @@ ggplot (data.prod.huck.na.origin, aes (x = origin, y = Fruit.Abund)) +
         y = "Huckleberry Fruit Abundance")
 ```
 
-
 Stand origin appears to influence huckleberry occurrence and cover, and huckleberry fruit occurrence and abundance.  Fire origin appears to positively influence huckleberry occurrence and cover, and fruit abundance. Fire origin may negatively influence fruit occurrence. Cutblock origin appears to negatively influence huckleberry fruit occurrence and abundance, but positively influences huckleberry cover. 
 
-Next I considered the effects of stand age of known origin stands on huckelberry measures.
+Next I considered the effects of stand age of known origin stands on huckleberry.
 
+Harvest origin stands are on average much younger (~22 years old) than fire origin stands (~75 years old). Thus the effect of stand origin on huckleberry could be related to age (i.e., they are confounded a bit). 
 
+```{r, productivity data - stand origin - age }
+data.prod.huck.known.origin <- data.prod.huck.na.origin [origin != 0] # drop unknown origins
 
+ggplot (data.prod.huck.known.origin, aes (x = origin, y = origin.age)) +
+  geom_boxplot () +
+  labs (x = "Harvest Origin (1) and Fire Origin (2) Stands",
+        y = "Stand Age")
+```
 
+So let's consider how age may affect huckleberry occurrence. Huckleberry may be more likely to be detected in slightly younger (~35 year old) stands, although the effect is pretty weak.
+
+```{r, productivity data - huckleberry occurence - age }
+ggplot (data.prod.huck.na.origin, aes (x = Species.Present, y = origin.age)) +
+  geom_boxplot () +
+  labs (x = "No Huckleberry (0) and Huckleberry Detected (1) Stands",
+        y = "Stand Age")
+```
+
+If we divide out stand age by origin, huckleberry on average tend to be detected in younger stands in harvest origin stands (detected in stands ~20 years compared to undetected in stands ~26 years) and fire origin stands (detected in stands ~75 years compared to undetected in stands ~80 years). So yes, origin is clearly confounded with age, but the negative effect of age is similar across origins. However, fire origin stands are older in general, so I think with this data we are limited to modeling the effect of age on huckleberry in harvest origin stands. 
+
+```{r, productivity data - huckleberry occurence - age by origin}
+data.prod.huck.known.origin <- data.prod.huck.na.origin [origin != 0] # drop unknown origins
+
+supp.labs <- c("Harvest", "Fire")
+names(supp.labs) <- c(1, 2)
+
+ggplot (data.prod.huck.known.origin, aes (x = Species.Present, y = origin.age)) +
+  geom_boxplot () +
+  labs (x = "No Huckleberry (0) and Huckleberry Detected (1) Stands",
+        y = "Stand Age") +
+  facet_grid (cols = vars(origin),
+              labeller = labeller (origin = supp.labs))
+```
+
+Again we see that age and origin are pretty well confounded. Older fire origin stands and younger harvest origin stands tended to be sampled in the data. I think here we can attempt to build an age model using harvest origin data only. 
 
 ```{r, productivity data - huckleberry cover - age and origin}
 
-
-data.prod.huck.na.origin <-  data.prod.huck.na.origin [Species.Cover != ""] # drop NA values
-data.prod.huck.known.origin <- data.prod.huck.na.origin [origin != 0] # drop unknown origins
-
-
-
-ggplot (data.prod.huck.known.origin, aes (x = origin.age, y = Species.Cover)) +
+ggplot (data.prod.huck.known.origin, aes (x = origin.age, y = Species.Cover, colour = factor(origin))) +
   geom_point () +
-  geom_smooth () +
+  geom_smooth (se=F) +
   labs (title = "Huckleberry Cover Across stand Ages",
         x = "Stand Age (years)",
-        y = "Fruit Abundance")
-
-two lines for each origin
-
-interaction age with origin
+        y = "Species Cover (%)")  +
+  scale_colour_discrete (name = "Stand Origin", labels = c("Harvest", "Fire"))
 
 ```
 
@@ -140,7 +164,32 @@ interaction age with origin
 
 
 
-Stadn orgin apepars to inlfuence occurence of 
+
+
+
+```{r, productivity data - huckleberry occurence - age by origin}
+data.prod.huck.known.origin <- data.prod.huck.na.origin [origin != 0] # drop unknown origins
+
+supp.labs <- c("Harvest", "Fire")
+names(supp.labs) <- c(1, 2)
+
+ggplot (data.prod.huck.known.origin, aes (x = Species.Present, y = origin.age)) +
+  geom_boxplot () +
+  labs (x = "No Huckleberry (0) and Huckleberry Detected (1) Stands",
+        y = "Stand Age") +
+  facet_grid (cols = vars(origin),
+              labeller = labeller (origin = supp.labs))
+```
+
+
+
+
+
+It may be notable though that fire origin stands seem to positively affect huckleberry, despite these stands beign older than harvest origin stands. 
+
+
+
+
 
 
 
