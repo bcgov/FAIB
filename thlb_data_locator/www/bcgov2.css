@@ -1,0 +1,323 @@
+@font-face {
+	font-family: ‘BCSans’, ‘Noto Sans’, Verdana, Arial, sans-serif;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  /* Margin bottom by footer height */
+  margin-top: 0;
+  margin-bottom: 100px;
+  font-family: ‘BCSans’, ‘Noto Sans’, Verdana, Arial, sans-serif;
+}
+
+body {
+    font-family: ‘BCSans’, ‘Noto Sans’, Verdana, Arial, sans-serif;
+    color: #494949;
+}
+
+header {
+    background-color: #036;
+    border-bottom: 2px solid #fcba19;
+    color: #fff;
+    display: flex;
+    min-height: 65px;
+    top: 0;
+    position: relative;
+    width: 100%;
+    -webkit-box-shadow: 0 6px 8px -4px #b3b1b3;
+    -moz-box-shadow: 0 6px 8px -4px #b3b1b3;
+    box-shadow: 0 6px 8px -4px #b3b1b3;
+  }
+  
+  header h2 {
+    font-family: ‘BCSans’, ‘Noto Sans’, Verdana, Arial, sans-serif;
+    font-weight: 500;  /* 400 */
+    margin: 5px 5px 0 30px;
+  }
+  
+  header .banner {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 0 10px 0 50px;
+    /* border-style: dotted;
+    border-width: 1px;
+    border-color: lightgrey; */
+  }
+  
+  header .other {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    /* border-style: dotted;
+    border-width: 1px;
+    border-color: lightgrey; */
+  }
+
+  header a [class^="fas fa-"] {
+    color: white;
+    font-size: 1.4em;
+    font-style: bold;
+    line-height: 1;
+    /* border-style: solid;
+    border-width: 1px;
+    border-color: #fcba19; */
+    padding: 5px;
+    -webkit-font-smoothing: antialiased;
+  }
+  
+  header .nav-btn {
+    display: block;
+    width: auto;
+    margin: 0 0 0 auto;
+    cursor: pointer;
+  }
+
+
+.navbar {
+    position: relative;
+    top: 0;
+    width: 100%;
+}
+
+.navbar-default {
+    background-color: #38598a;
+    color: #fcba19;
+	-webkit-box-shadow: 0 6px 8px -4px #b3b1b3;
+    -moz-box-shadow: 0 6px 8px -4px #b3b1b3;
+    box-shadow: 0 6px 8px -4px #b3b1b3;
+}
+
+.navbar-header{
+	display: none
+}
+
+
+.navbar-default .navbar-nav>li>a {
+    color: #fff;
+}
+
+.navbar-nav>li>a {
+    line-height: 25px;
+    font-size: 17px;
+}
+
+.navbar-default .navbar-nav>li>a:focus, .navbar-default .navbar-nav>li>a:hover {
+    color: #f0f0f0;
+    text-decoration: underline;
+}
+
+.navbar-default .navbar-brand, .navbar-default .navbar-brand:hover {
+    color: #fff;
+    color: transparent;
+    padding-right: 150px;
+    /* min-width: 150px; */
+}
+
+.navbar-default .navbar-nav>.active>a, .navbar-default .navbar-nav>.active>a:focus, .navbar-default .navbar-nav>.active>a:hover {
+    color: #fff;
+    background-color: #5a7dab;
+    text-decoration: underline;
+	font-size: 17px;
+}
+
+.navbar-default .navbar-nav>.open>a:hover, .navbar-default .navbar-nav>li>a:focus, .navbar-default .navbar-nav>li>a:hover {
+    color: #fff;
+    text-decoration: underline;
+    background-color: #38598a;
+    font-size: 17px;
+}
+
+.nav-tabs {
+    margin: 20px 0;
+}
+
+.box.box-solid.box-primary>.box-header {
+  color:#fff;
+  background:#38598A
+                    }
+					
+.box.box-solid.box-primary h3 {
+	font-family: ‘BCSans’, ‘Noto Sans’, Verdana, Arial, sans-serif;
+	}
+
+.modal { font-family: ‘BCSans’, ‘Noto Sans’, Verdana, Arial, sans-serif;}
+.modal-header {background-color: #38598A;color:#fff;}
+	
+/* file input label */
+label{text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white; 
+font-family:‘BCSans’, ‘Noto Sans’, Verdana, Arial, sans-serif;}
+
+/* BCGOV guidelines */
+html,body,#page, header { height:100%;}
+
+footer {
+  background-color: #036;
+  border-top: 2px solid #fcba19;
+  color: #fff;
+  font-family: ‘BCSans’, ‘Noto Sans’, Verdana, Arial, sans-serif; 
+  position:absolute;
+  bottom:0;
+  width:100%;
+}
+
+footer .container {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  height: 60px;
+}
+
+footer ul {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin: 0;
+  color: #fff;
+  list-style: none;
+  align-items: center;
+  height: 100%;
+}
+
+footer ul li a {
+  font-size: 1.1 em;
+  font-weight: normal;  /* 400 */
+  color: #fff;
+  border-right: 1px solid #4b5e7e;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+a:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+:focus {
+  outline: 4px solid #3B99FC;
+  outline-offset: 1px;
+}
+
+
+ul.inline {
+    list-style-type: none;
+    margin: 0;
+    overflow: hidden;
+    padding: 0;
+    text-align: left;
+}
+
+ul.inline li {
+    display: inline-block;
+    padding: 2px 10px;
+    position: relative;
+}
+
+img.back-to-top.footer-overlap {
+    position: absolute;
+    top: -63px;
+}
+
+img.back-to-top {
+    position: fixed;
+    right: 10px;
+    bottom: 10px;
+    opacity: 0.75;
+    filter: alpha(opacity=75);
+    z-index: 1100;
+    cursor: pointer;
+    display: none;
+    vertical-align: middle;
+    border: 0;
+}
+
+#footer a, #footer h2 {
+    color: #fff;
+}
+
+a {
+	  color: #1a5a96;
+}
+
+ul.inline li a:link, nav ul.inline li a:visited {
+    color: white;
+    display: block;
+    text-align: center;
+}
+
+/* Mobility sunburst title */
+#mobility_sunburst_title {
+    font-size: 14px;
+    text-align: center;
+    font-weight: bold;
+}
+
+ @media screen and (min-width: 768px) {
+    .navbar {
+      display: block;
+    }
+
+    .navbar ul {
+      flex-direction: row;
+    }
+
+    .navbar ul li {
+      margin: 0;
+    }
+    
+
+    header .nav-btn {
+      display: none;
+      width: auto;
+      margin: 0 0 0 auto;
+      cursor: pointer;
+    }
+  }
+
+  @media screen and (min-width: 768px) and (max-width: 899px) {
+	  
+	.navbar {
+	display: flex;
+	}
+    header h2 {
+      font-size: 20px;
+      visibility: visible;
+	  letter-spacing: -.5px;
+    }
+  }
+  
+  @media screen and (min-width: 900px) {
+	 .navbar {
+	display: flex;
+	} 
+	  
+    header h2 {
+      font-size: 20px;
+      visibility: visible;
+	  letter-spacing: -.5px;
+    }
+  }
+  
+  @media screen and (max-width: 768px) {
+	
+	 header .banner {
+    display: flex;
+    justify-content: flex-start;
+    align-items: left;
+    margin: 0 10px 0 5px;
+    /* border-style: dotted;
+    border-width: 1px;
+    border-color: lightgrey; */
+  }
+
+ header h2 {
+	font-size: calc(3px + 2.2vw);
+	letter-spacing: -.5px;
+  }
+
+  }

@@ -1,0 +1,10 @@
+name: thlb_data_locator
+title:
+username:
+account: bcgov-env
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3557345
+bundleId: 4165547
+url: https://bcgov-env.shinyapps.io/thlb_data_locator/
+when: 1612157630.88508
