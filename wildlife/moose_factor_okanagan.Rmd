@@ -1,8 +1,11 @@
 ---
-title: "Okanagan Timber Supply Review 2020: Moose Analysis"
+title: 'Okanagan Timber Supply Review 2020: Moose Analysis'
 author: "Tyler Muhly"
 date: "25/05/2020"
-output: html_document
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
